@@ -18,189 +18,169 @@
 
 /* codul de eroare returnat de anumite apeluri */
 extern int errno;
- 
- void registration(char input[1000]) 
- {
 
- }
-
-int quit = 0;
-int contor = 0;
-
-int main ()
+int main()
 {
-    struct sockaddr_in server;	// structura folosita de server
-    struct sockaddr_in from;
-    char msg[1000];		//mesajul primit de la client
-    char msgrasp[1000]=" ";        //mesaj de raspuns pentru client
-    int sd;			//descriptorul de socket
-	char user_input[1000]; // copie a mesajului primit de la client
+	struct sockaddr_in server; // structura folosita de server
+	struct sockaddr_in from;
+	char input[1000];		 //mesajul primit de la client
+	char output[1000] = " "; //mesaj de raspuns pentru client
+	int sd;					 //descriptorul de socket
+	char user_input[1000];   // copie a mesajului primit de la client
 
-	// deschiderea bd-ului
+	// conexiune baza de date
 	sqlite3 *database;
 	int rc;
 	rc = sqlite3_open("musicdb", &database);
-	if(rc)
+	if (rc)
 		printf("Error opening database \n");
 	else
 		printf("Database opened successfully \n");
 	sqlite3_close(database);
 
-    /* crearea unui socket */
-    if ((sd = socket (AF_INET, SOCK_STREAM, 0)) == -1)
-    {
-    	perror ("Eroare la socket().\n");
-    	return errno;
-    }
+	/* crearea unui socket */
+	if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+	{
+		perror("Eroare la socket().\n");
+		return errno;
+	}
 
-    /* pregatirea structurilor de date */
-    bzero (&server, sizeof (server));
-    bzero (&from, sizeof (from));
+	/* pregatirea structurilor de date */
+	bzero(&server, sizeof(server));
+	bzero(&from, sizeof(from));
 
-    /* umplem structura folosita de server */
-    /* stabilirea familiei de socket-uri */
-    server.sin_family = AF_INET;
-    /* acceptam orice adresa */
-    server.sin_addr.s_addr = htonl (INADDR_ANY);
-    /* utilizam un port utilizator */
-    server.sin_port = htons (PORT);
+	/* umplem structura folosita de server */
+	/* stabilirea familiei de socket-uri */
+	server.sin_family = AF_INET;
+	/* acceptam orice adresa */
+	server.sin_addr.s_addr = htonl(INADDR_ANY);
+	/* utilizam un port utilizator */
+	server.sin_port = htons(PORT);
 
-    /* atasam socketul */
-    if (bind (sd, (struct sockaddr *) &server, sizeof (struct sockaddr)) == -1)
-    {
-    	perror ("Eroare la bind().\n");
-    	return errno;
-    }
+	/* atasam socketul */
+	if (bind(sd, (struct sockaddr *)&server, sizeof(struct sockaddr)) == -1)
+	{
+		perror("Eroare la bind().\n");
+		return errno;
+	}
 
-    /* punem serverul sa asculte daca vin clienti sa se conecteze */
-    if (listen (sd, 1) == -1)
-    {
-    	perror ("Eroare la listen().\n");
-    	return errno;
-    }
+	/* punem serverul sa asculte daca vin clienti sa se conecteze */
+	if (listen(sd, 1) == -1)
+	{
+		perror("Eroare la listen().\n");
+		return errno;
+	}
 
-    /* servim in mod concurent clientii... */
-    while (1 && quit==0)
-    {
-		if(quit == 1)
+	/* servim in mod concurent clientii... */
+	while (1)
+	{
+		int client;
+		int length = sizeof(from);
+
+		printf("Listening on port %d...\n", PORT);
+		fflush(stdout);
+
+		/* acceptam un client (stare blocanta pina la realizarea conexiunii) */
+		client = accept(sd, (struct sockaddr *)&from, &length);
+
+		/* eroare la acceptarea conexiunii de la un client */
+		if (client < 0)
 		{
-			break;
+			perror("Eroare la accept().\n");
+			continue;
 		}
-    	int client;
-    	int length = sizeof (from);
 
-    	printf (" Listening on port %d...\n",PORT);
-    	fflush (stdout);
-
-    	/* acceptam un client (stare blocanta pina la realizarea conexiunii) */
-    	client = accept (sd, (struct sockaddr *) &from, &length);
-
-    	/* eroare la acceptarea conexiunii de la un client */
-    	if (client < 0)
-    	{
-    		perror ("Eroare la accept().\n");
-    		continue;
-    	}
-
-    	int pid;
-    	if ((pid = fork()) == -1) {
-    		close(client);
-    		continue;
-    	} else if (pid > 0) {
-    		// parinte
-    		close(client);
-    		continue;
-    	} else if (pid == 0) {
-
-		// --- MESAJ WELCOME PENTRU CLIENT -------------
+		int pid;
+		if ((pid = fork()) == -1)
+		{
+			close(client);
+			continue;
+		}
+		else if (pid > 0)
+		{
+			// parinte
+			close(client);
+			continue;
+		}
+		else if (pid == 0)
+		{
+			// --- MESAJ WELCOME PENTRU CLIENT -------------
 
 			/*pregatim mesajul de raspuns */
-    		bzero(msgrasp,1000);
-    		strcat(msgrasp,"Welcome to TopMusic!\n Please enter one of the following commands:\n 1) register <username> <password>\n 2) login <username> <password>\n 3) exit\n");
-    		printf(" Sending welcome message to client...");
+			bzero(output, 1000);
+			strcat(output, "Welcome to TopMusic!\n Please enter one of the following commands:\n 1) register <username> <password>\n 2) login <username> <password>\n 3) exit\n");
+			printf(" Sending welcome message to client...\n");
 
-    		/* returnam mesajul clientului */
-    		if (write (client, msgrasp, 1000) <= 0)
-    		{
-    			perror ("Eroare la write() catre client.\n");
-    			continue;		/* continuam sa ascultam */
-    		}
-    		else
-    			printf (" Response sent successfully.\n");
-
-			// ---------------------------------------------
-
-		while(1 && quit==0)
-		{
-			if(quit == 1)
+			/* returnam mesajul clientului */
+			if (write(client, output, 1000) <= 0)
 			{
-				close(client);
-				break;
+				perror("Eroare la write() catre client.\n");
+				continue; /* continuam sa ascultam */
 			}
-			
-			contor++;
-			printf("%i", contor);
-    		// copil
-    		close(sd);
+			else
+				printf(" Response sent successfully.\n");
 
-    		/* s-a realizat conexiunea, se astepta mesajul */
-    		bzero (msg, 1000);
-			printf ("Welcome to TopMusic - Server\n");
-			//printf("%s\n", sqlite3_libversion()); 
-    		printf ("Awaiting input from client...\n");
-    		fflush (stdout);
+			while (1)
+			{
+				// copil
+				close(sd);
+				/* s-a realizat conexiunea, se astepta mesajul */
+				bzero(input, 1000);
+				printf("Welcome to TopMusic - Server\n");
+				//printf("%s\n", sqlite3_libversion());
+				printf("Awaiting input from client...\n");
+				fflush(stdout);
 
-    		/* citirea mesajului */
-    		if (read (client, msg, 1000) <= 0)
-    		{
-    			perror ("Eroare la read() de la client.\n");
-    			close (client);	/* inchidem conexiunea cu clientul */
-    			continue;		/* continuam sa ascultam */
-    		}
+				/* citirea mesajului */
+				if (read(client, input, 1000) <= 0)
+				{
+					perror("Eroare la read() de la client.\n");
+					close(client); /* inchidem conexiunea cu clientul */
+					continue;	  /* continuam sa ascultam */
+				}
 
-    		printf (" Input received: %s\n", msg);
-			
-			// --- FUNCTIE EXIT ------------
+				printf(" Input received: %s\n", input);
 
-			if(strstr(msg,"exit")!=0)
+				// --- FUNCTIE EXIT ------------
+
+				if (strstr(input, "exit") != 0)
 				{
 					printf("Ending connection with client...");
-					write(client,"Connection terminated.\n",1000);
-					quit = 1;
+					write(client, "Connection terminated.\n", 1000);
 					close(client);
-					break;
+					exit(0);
 				}
 
-			// --- FUNCTIE REGISTER --------
+				// --- FUNCTIE REGISTER --------
 
-			if(strstr(msg,"register")!=0)
+				else if (strstr(input, "register") != 0)
 				{
-					registration(msg);
+					//registration(input);
 				}
 
-			// -----------------------------
+				// --- FUNCTIE LOGIN -----------
 
-    		/*pregatim mesajul de raspuns */
-    		bzero(msgrasp,1000);
-    		strcat(msgrasp,"Hello ");
-    		strcat(msgrasp,msg);
+				else if (strstr(input, "login") != 0)
+				{
+					//login(input);
+				}
 
-    		printf(" Sending response back to client: %s\n",msgrasp);
+				/*pregatim mesajul de raspuns */
+				bzero(output, 1000);
+				strcat(output, "Hello ");
+				strcat(output, input);
 
+				printf(" Sending response back to client: %s\n", output);
 
-    		/* returnam mesajul clientului */
-    		if (write (client, msgrasp, 1000) <= 0)
-    		{
-    			perror ("Eroare la write() catre client.\n");
-    			continue;		/* continuam sa ascultam */
-    		}
-    		else
-    			printf (" Response sent successfully.\n");
-
-
-    	}
-		exit(0);//while
-	} // else if
-
-    }				/* while */
-}				/* main */
+				/* returnam mesajul clientului */
+				if (write(client, output, 1000) <= 0)
+				{
+					perror("Eroare la write() catre client.\n");
+					continue; /* continuam sa ascultam */
+				}
+				else
+					printf(" Response sent successfully.\n");
+			} //while
+		} // else if
+	}		  //while
+} //main
