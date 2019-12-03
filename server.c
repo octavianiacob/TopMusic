@@ -11,12 +11,21 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sqlite3.h>
 
 /* portul folosit */
 #define PORT 2024
 
 /* codul de eroare returnat de anumite apeluri */
 extern int errno;
+ 
+ void registration(char input[1000]) 
+ {
+
+ }
+
+int quit = 0;
+int contor = 0;
 
 int main ()
 {
@@ -25,7 +34,17 @@ int main ()
     char msg[1000];		//mesajul primit de la client
     char msgrasp[1000]=" ";        //mesaj de raspuns pentru client
     int sd;			//descriptorul de socket
-	char user_input[100]; // copie a mesajului primit de la client
+	char user_input[1000]; // copie a mesajului primit de la client
+
+	// deschiderea bd-ului
+	sqlite3 *database;
+	int rc;
+	rc = sqlite3_open("musicdb", &database);
+	if(rc)
+		printf("Error opening database \n");
+	else
+		printf("Database opened successfully \n");
+	sqlite3_close(database);
 
     /* crearea unui socket */
     if ((sd = socket (AF_INET, SOCK_STREAM, 0)) == -1)
@@ -61,8 +80,12 @@ int main ()
     }
 
     /* servim in mod concurent clientii... */
-    while (1)
+    while (1 && quit==0)
     {
+		if(quit == 1)
+		{
+			break;
+		}
     	int client;
     	int length = sizeof (from);
 
@@ -88,16 +111,8 @@ int main ()
     		close(client);
     		continue;
     	} else if (pid == 0) {
-    		// copil
-    		close(sd);
 
-    		/* s-a realizat conexiunea, se astepta mesajul */
-    		bzero (msg, 100);
-			printf ("Welcome to TopMusic - Server\n");
-    		printf ("Awaiting input from client...\n");
-    		fflush (stdout);
-
-			// --- MESAJ WELCOME PENTRU CLIENT -------------
+		// --- MESAJ WELCOME PENTRU CLIENT -------------
 
 			/*pregatim mesajul de raspuns */
     		bzero(msgrasp,1000);
@@ -115,8 +130,28 @@ int main ()
 
 			// ---------------------------------------------
 
+		while(1 && quit==0)
+		{
+			if(quit == 1)
+			{
+				close(client);
+				break;
+			}
+			
+			contor++;
+			printf("%i", contor);
+    		// copil
+    		close(sd);
+
+    		/* s-a realizat conexiunea, se astepta mesajul */
+    		bzero (msg, 1000);
+			printf ("Welcome to TopMusic - Server\n");
+			//printf("%s\n", sqlite3_libversion()); 
+    		printf ("Awaiting input from client...\n");
+    		fflush (stdout);
+
     		/* citirea mesajului */
-    		if (read (client, msg, 100) <= 0)
+    		if (read (client, msg, 1000) <= 0)
     		{
     			perror ("Eroare la read() de la client.\n");
     			close (client);	/* inchidem conexiunea cu clientul */
@@ -125,8 +160,28 @@ int main ()
 
     		printf (" Input received: %s\n", msg);
 			
+			// --- FUNCTIE EXIT ------------
+
+			if(strstr(msg,"exit")!=0)
+				{
+					printf("Ending connection with client...");
+					write(client,"Connection terminated.\n",1000);
+					quit = 1;
+					close(client);
+					break;
+				}
+
+			// --- FUNCTIE REGISTER --------
+
+			if(strstr(msg,"register")!=0)
+				{
+					registration(msg);
+				}
+
+			// -----------------------------
+
     		/*pregatim mesajul de raspuns */
-    		bzero(msgrasp,100);
+    		bzero(msgrasp,1000);
     		strcat(msgrasp,"Hello ");
     		strcat(msgrasp,msg);
 
@@ -134,18 +189,18 @@ int main ()
 
 
     		/* returnam mesajul clientului */
-    		if (write (client, msgrasp, 100) <= 0)
+    		if (write (client, msgrasp, 1000) <= 0)
     		{
     			perror ("Eroare la write() catre client.\n");
     			continue;		/* continuam sa ascultam */
     		}
     		else
     			printf (" Response sent successfully.\n");
-    		
-    		/* am terminat cu acest client, inchidem conexiunea */
-    		close (client);
-    		exit(0);
+
+
     	}
+		exit(0);//while
+	} // else if
 
     }				/* while */
 }				/* main */
