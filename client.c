@@ -57,6 +57,20 @@ int main (int argc, char *argv[])
       return errno;
     }
 
+  // --- PRIMIRE MESAJ WELCOME DE LA SERVER ----------
+  
+  /* citirea raspunsului dat de server 
+     (apel blocant pina cind serverul raspunde) */
+  if (read (sd, msg, 1000) < 0)
+    {
+      perror ("[client]Eroare la read() de la server.\n");
+      return errno;
+    }
+  /* afisam mesajul primit */
+  printf ("%s",msg);
+
+  // ----------------------------------------------------
+
   /* citirea mesajului */
   bzero (msg, 100);
   printf ("[client] Enter a command: ");
@@ -78,7 +92,7 @@ int main (int argc, char *argv[])
       return errno;
     }
   /* afisam mesajul primit */
-  printf ("[client] Response from server: %s\n", msg);
+  printf ("[client] Response from server:\n %s\n", msg);
 
   /* inchidem conexiunea, am terminat */
   close (sd);

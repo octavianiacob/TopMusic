@@ -18,19 +18,12 @@
 /* codul de eroare returnat de anumite apeluri */
 extern int errno;
 
-int registration(char input[])
-{
-	//int i = 0;
-	//for(int i=0; i<strlen(input); i++)
-
-}
-
 int main ()
 {
     struct sockaddr_in server;	// structura folosita de server
     struct sockaddr_in from;
-    char msg[100];		//mesajul primit de la client
-    char msgrasp[100]=" ";        //mesaj de raspuns pentru client
+    char msg[1000];		//mesajul primit de la client
+    char msgrasp[1000]=" ";        //mesaj de raspuns pentru client
     int sd;			//descriptorul de socket
 	char user_input[100]; // copie a mesajului primit de la client
 
@@ -100,13 +93,27 @@ int main ()
 
     		/* s-a realizat conexiunea, se astepta mesajul */
     		bzero (msg, 100);
-			printf ("Welcome to TopMusic\n");
-			printf (" Please enter one of the following commands:\n");
-			printf ("1) register <username> <password>\n");
-			printf ("2) login <username> <password>\n");
-			printf ("3) exit\n");
-    		printf (" Awaiting input...\n");
+			printf ("Welcome to TopMusic - Server\n");
+    		printf ("Awaiting input from client...\n");
     		fflush (stdout);
+
+			// --- MESAJ WELCOME PENTRU CLIENT -------------
+
+			/*pregatim mesajul de raspuns */
+    		bzero(msgrasp,1000);
+    		strcat(msgrasp,"Welcome to TopMusic!\n Please enter one of the following commands:\n 1) register <username> <password>\n 2) login <username> <password>\n 3) exit\n");
+    		printf(" Sending welcome message to client...");
+
+    		/* returnam mesajul clientului */
+    		if (write (client, msgrasp, 1000) <= 0)
+    		{
+    			perror ("Eroare la write() catre client.\n");
+    			continue;		/* continuam sa ascultam */
+    		}
+    		else
+    			printf (" Response sent successfully.\n");
+
+			// ---------------------------------------------
 
     		/* citirea mesajului */
     		if (read (client, msg, 100) <= 0)
@@ -118,14 +125,6 @@ int main ()
 
     		printf (" Input received: %s\n", msg);
 			
-			if(strncmp(msg, "register", 8)==0)
-				{
-					// registration(msg);
-				}
-			
-
-
-
     		/*pregatim mesajul de raspuns */
     		bzero(msgrasp,100);
     		strcat(msgrasp,"Hello ");
