@@ -57,23 +57,32 @@ int main(int argc, char *argv[])
     return errno;
   }
 
+  // Welcome Message
+
+  printf("%s", "Welcome to TopMusic!\n Please enter one of the following commands:\n 1) register <username> <password>\n 2) login <username> <password>\n 3) exit\n");
+
   while (1)
   {
-    read(sd, msg, sizeof(msg)); // citire mesaj de la server
-    printf("%s\n", msg);
-    if(strstr(msg, "Connection Terminated.")!=0)
-      {
-        printf("ar trebui sa iesi\n");
-        exit(0);
-        break;
-      }
+    bzero(msg, 1000);
+    read(0, msg, sizeof(msg)); // citire de la tastatura
+    msg[strlen(msg) - 1] = 0;
+    //-------------------------------------------------------------
+    if (strcmp(msg, "register") == 0)
+    {
 
+      write(sd, msg, sizeof(msg));
       bzero(msg, 1000);
+      printf("Please provide an username:\n");
       read(0, msg, sizeof(msg)); // citire de la tastatura
       msg[strlen(msg) - 1] = 0;
+      write(sd, msg, sizeof(msg));
+    }
 
-      write(sd, msg, sizeof(msg)); // scrierea catre server
-      bzero(msg, 1000);
+    write(sd, msg, sizeof(msg)); // scrierea catre server
+    bzero(msg, 1000);
+
+    read(sd, msg, sizeof(msg)); // citire mesaj de la server
+    printf("%s\n", msg);
   }
 
   close(sd);

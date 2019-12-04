@@ -15,6 +15,7 @@
 
 /* portul folosit */
 #define PORT 2024
+#define BUF 1000
 
 /* codul de eroare returnat de anumite apeluri */
 extern int errno;
@@ -104,24 +105,10 @@ int main()
 		}
 		else if (pid == 0)
 		{
-			// --- MESAJ WELCOME PENTRU CLIENT -------------
-
-			/*pregatim mesajul de raspuns */
-			bzero(output, 1000);
-			strcat(output, "Welcome to TopMusic!\n Please enter one of the following commands:\n 1) register <username> <password>\n 2) login <username> <password>\n 3) exit\n");
-			printf(" Sending welcome message to client...\n");
-
-			/* returnam mesajul clientului */
-			if (write(client, output, 1000) <= 0)
-			{
-				perror("Eroare la write() catre client.\n");
-				continue; /* continuam sa ascultam */
-			}
-			else
-				printf(" Response sent successfully.\n");
 
 			while (1)
 			{
+				char username[100];
 				// copil
 				close(sd);
 				/* s-a realizat conexiunea, se astepta mesajul */
@@ -132,7 +119,7 @@ int main()
 				fflush(stdout);
 
 				/* citirea mesajului */
-				if (read(client, input, 1000) <= 0)
+				if (read(client, input, BUF) <= 0)
 				{
 					perror("Eroare la read() de la client.\n");
 					close(client); /* inchidem conexiunea cu clientul */
@@ -143,19 +130,20 @@ int main()
 
 				// --- FUNCTIE EXIT ------------
 
-				if (strstr(input, "exit") != 0)
+				if (strcmp(input, "exit") == 0)
 				{
 					printf("Ending connection with client...");
-					write(client, "Connection terminated.\n", 1000);
+					write(client, "Connection terminated.\n", BUF);
 					close(client);
 					exit(0);
 				}
 
 				// --- FUNCTIE REGISTER --------
 
-				else if (strstr(input, "register") != 0)
+				else if (strcmp(input, "register") == 0)
 				{
-					//registration(input);
+					read(client, username, BUF);
+					printf("Username-ul este %s \n", username);
 				}
 
 				// --- FUNCTIE LOGIN -----------
@@ -166,14 +154,14 @@ int main()
 				}
 
 				/*pregatim mesajul de raspuns */
-				bzero(output, 1000);
+				bzero(output, BUF);
 				strcat(output, "Hello ");
 				strcat(output, input);
 
 				printf(" Sending response back to client: %s\n", output);
 
 				/* returnam mesajul clientului */
-				if (write(client, output, 1000) <= 0)
+				if (write(client, output, BUF) <= 0)
 				{
 					perror("Eroare la write() catre client.\n");
 					continue; /* continuam sa ascultam */
@@ -181,6 +169,6 @@ int main()
 				else
 					printf(" Response sent successfully.\n");
 			} //while
-		} // else if
+		}	 // else if
 	}		  //while
 } //main
