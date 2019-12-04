@@ -69,13 +69,31 @@ int main(int argc, char *argv[])
     //-------------------------------------------------------------
     if (strcmp(msg, "register") == 0)
     {
-
       write(sd, msg, sizeof(msg));
       bzero(msg, 1000);
       printf("Please provide an username:\n");
       read(0, msg, sizeof(msg)); // citire de la tastatura
       msg[strlen(msg) - 1] = 0;
       write(sd, msg, sizeof(msg));
+      bzero(msg, 1000);
+      printf("Please provide a password:\n");
+      read(0, msg, sizeof(msg)); // citire de la tastatura
+      msg[strlen(msg) - 1] = 0;
+      printf("Registration successful.\n");
+    }
+    else if (strcmp(msg, "login") == 0)
+    {
+      write(sd, msg, sizeof(msg));
+      bzero(msg, 1000);
+      printf("Enter your username:\n");
+      read(0, msg, sizeof(msg)); // citire de la tastatura
+      msg[strlen(msg) - 1] = 0;
+      write(sd, msg, sizeof(msg));
+      bzero(msg, 1000);
+      printf("Enter your password:\n");
+      read(0, msg, sizeof(msg)); // citire de la tastatura
+      msg[strlen(msg) - 1] = 0;
+      printf("Login successful.\n");
     }
 
     write(sd, msg, sizeof(msg)); // scrierea catre server
