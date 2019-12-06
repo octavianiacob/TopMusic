@@ -24,56 +24,73 @@ char username[100], password[100];
 // conexiune baza de date
 sqlite3 *database;
 sqlite3_stmt *statement;
-char *sql = NULL;
+char *query = NULL;
 char *err_msg = 0;
 char str[1000];
 int rc;
 
-
-
-
-static int callback (void *str, int argc, char **argv, char **azColName)
+void insertUser(char username[]) 
 {
-    int i;
-    char* data = (char*) str;
-
-    for (i = 0; i < argc; i++)
-    {
-        strcat (data, azColName[i]);
-        strcat (data, " = ");
-        if (argv[i])
-            strcat (data, argv[i]);
-        else
-            strcat (data, "NULL");
-        strcat (data, "\n");
-    }
-
-    strcat (data, "\n");
-    return 0;
-}
-
-
-
-void insertUser() {
 	rc = sqlite3_open("topmusic.db", &database);
     if (rc)
-        printf("Error opening database \n");
+        printf("Error opening database. \n");
     else
-        printf("Database opened successfully \n");
-
-    asprintf(&sql, "insert into user (user_name, user_password) values (\"%s\", \"%s\");", "Tom", "Tompassword"); /* 1 */
-
-    printf("%s", sql);
-    rc = sqlite3_exec(database, sql, callback, str, &err_msg);
-    if (rc != SQLITE_OK)
-    {
-
-        printf("SQL error: %s\n", sqlite3_errmsg(database));
-
-        sqlite3_free(err_msg);
-    }
+        printf("Database opened successfully. \n");
+    asprintf(&query, "insert into user (user_name) values (\"%s\");", username);
+    printf("The following SQL Query will run: '%s'\n", query);
+	sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
+	rc = sqlite3_step(statement);
+	if (rc != SQLITE_DONE) 
+    	printf("ERROR inserting data: %s\n", sqlite3_errmsg(database));
+	else
+		printf("Username inserted successfully.\n");
+	sqlite3_finalize(statement);
+	free(query);
 	sqlite3_close(database);
-	printf("%s","terminat.");
+}
+
+void insertPassword(char username[], char password[]) 
+{
+	rc = sqlite3_open("topmusic.db", &database);
+    if (rc)
+        printf("Error opening database. \n");
+    else
+        printf("Database opened successfully. \n");
+    asprintf(&query, "update user set user_password = \"%s\" where user_name = \"%s\";", password, username);
+    printf("The following SQL Query will run: '%s'\n", query);
+	sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
+	rc = sqlite3_step(statement);
+	if (rc != SQLITE_DONE) 
+    	printf("ERROR inserting data: %s\n", sqlite3_errmsg(database));
+	else
+		printf("Password inserted successfully.\n");
+	sqlite3_finalize(statement);
+	free(query);
+	sqlite3_close(database);
+}
+
+int isValidUser(char username[])
+{
+	char isValid[1000];
+	bzero(isValid,1000);
+	isValid[0]='1';
+	rc = sqlite3_open("topmusic.db", &database);
+    if (rc)
+        printf("Error opening database. \n");
+    else
+        printf("Database opened successfully. \n");
+    asprintf(&query, "SELECT * FROM user WHERE user_name = \"%s\";", username);
+    printf("The following SQL Query will run: '%s'\n", query);
+	rc = sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
+	rc = sqlite3_step(statement);
+	if(rc == SQLITE_ROW)
+		sprintf(isValid, sqlite3_column_text(statement, 0));
+	sqlite3_finalize(statement);
+	free(query);
+	sqlite3_close(database);
+	if(strcmp(isValid,"1")==0)
+		return 1;
+	return 0;	
 }
 
 int main()
@@ -189,12 +206,25 @@ int main()
 				{
 					bzero(username, 100);
 					bzero(password, 100);
-					read(client, username, BUF);
+					read(client, username, BUF); // citeste username de la client
 					printf("Username-ul este %s \n", username);
-					insertUser();
-
-					read(client, password, BUF);
+					insertUser(username);
+					read(client, password, BUF); //citeste parola de la client
 					printf("Parola este %s \n", password);
+					insertPassword(username, password);
+					
+					/*if(isValidUser(username)==1)
+						{
+							write(client,"valid", BUF); //scrie valid la client
+							
+						}
+					else
+						{
+							write(client,"invalid", BUF); //scrie invalid la client
+							printf("E gresit");
+						} */
+
+					
 				}
 
 				// --- FUNCTIE LOGIN -----------
@@ -211,23 +241,19 @@ int main()
 
 				else
 				{
+					printf("The following command failed: %s\n", output);
 					bzero(output, BUF);
 					strcpy(output, "Error! Unknown command.\n");
 					bzero(input, BUF);
 				}
 
-				/*pregatim mesajul de raspuns */
-				//bzero(output, BUF);
-				//strcat(output, "Hello ");
-				//strcat(output, input);
-
 				printf(" Sending response back to client: %s\n", output);
 
-				/* returnam mesajul clientului */
+				// returnam mesajul clientului 
 				if (write(client, output, BUF) <= 0)
 				{
 					perror("Eroare la write() catre client.\n");
-					continue; /* continuam sa ascultam */
+					continue; // continuam sa ascultam
 				}
 				else
 					printf(" Response sent successfully.\n");

@@ -59,27 +59,45 @@ int main(int argc, char *argv[])
 
   // Welcome Message
 
-  printf("%s", "Welcome to TopMusic!\n Please enter one of the following commands:\n 1) register <username> <password>\n 2) login <username> <password>\n 3) exit\n");
+  printf("%s", "Welcome to TopMusic!\n Please enter one of the following commands:\n 1) register\n 2) login\n 3) exit\n");
 
   while (1)
   {
     bzero(msg, 1000);
-    read(0, msg, sizeof(msg)); // citire de la tastatura
+    read(0, msg, sizeof(msg)); // citire de comanda de la tastatura
     msg[strlen(msg) - 1] = 0;
     //-------------------------------------------------------------
     if (strcmp(msg, "register") == 0)
     {
-      write(sd, msg, sizeof(msg));
+      write(sd, msg, sizeof(msg));//scrie register la server
       bzero(msg, 1000);
       printf("Please provide an username:\n");
-      read(0, msg, sizeof(msg)); // citire de la tastatura
+      read(0, msg, sizeof(msg)); // citeste de la tastatura username
       msg[strlen(msg) - 1] = 0;
-      write(sd, msg, sizeof(msg));
+      write(sd, msg, sizeof(msg)); // scrie la server username-ul
       bzero(msg, 1000);
       printf("Please provide a password:\n");
       read(0, msg, sizeof(msg)); // citire de la tastatura
       msg[strlen(msg) - 1] = 0;
+      write(sd, msg, sizeof(msg)); // scrie la server parola
+      bzero(msg, 1000);
       printf("Registration successful.\n");
+
+      /*read(sd, msg, sizeof(msg)); // citeste valid/invalid de la server;
+      
+      if(strcmp(msg,"valid")==0)
+      {
+      bzero(msg, 1000);
+      
+      }
+      else
+        {
+          bzero(msg, 1000);
+          printf("This username is taken. Try again.\n");
+        } */
+
+
+      
     }
     else if (strcmp(msg, "login") == 0)
     {
