@@ -20,42 +20,71 @@
 /* codul de eroare returnat de anumite apeluri */
 extern int errno;
 
+char username[100], password[100];
+// conexiune baza de date
+sqlite3 *database;
+sqlite3_stmt *statement;
+char *sql = NULL;
+char *err_msg = 0;
+char str[1000];
+int rc;
+
+
+
+
+static int callback (void *str, int argc, char **argv, char **azColName)
+{
+    int i;
+    char* data = (char*) str;
+
+    for (i = 0; i < argc; i++)
+    {
+        strcat (data, azColName[i]);
+        strcat (data, " = ");
+        if (argv[i])
+            strcat (data, argv[i]);
+        else
+            strcat (data, "NULL");
+        strcat (data, "\n");
+    }
+
+    strcat (data, "\n");
+    return 0;
+}
+
+
+
+void insertUser() {
+	rc = sqlite3_open("topmusic.db", &database);
+    if (rc)
+        printf("Error opening database \n");
+    else
+        printf("Database opened successfully \n");
+
+    asprintf(&sql, "insert into user (user_name, user_password) values (\"%s\", \"%s\");", "Tom", "Tompassword"); /* 1 */
+
+    printf("%s", sql);
+    rc = sqlite3_exec(database, sql, callback, str, &err_msg);
+    if (rc != SQLITE_OK)
+    {
+
+        printf("SQL error: %s\n", sqlite3_errmsg(database));
+
+        sqlite3_free(err_msg);
+    }
+	sqlite3_close(database);
+	printf("%s","terminat.");
+}
+
 int main()
 {
+	//pquery = &query[0];
 	struct sockaddr_in server; // structura folosita de server
 	struct sockaddr_in from;
 	char input[1000];		 //mesajul primit de la client
 	char output[1000] = " "; //mesaj de raspuns pentru client
 	int sd;					 //descriptorul de socket
 	char user_input[1000];   // copie a mesajului primit de la client
-
-	// conexiune baza de date
-	sqlite3 *database;
-	sqlite3_stmt *statement;
-	int rc;
-	rc = sqlite3_open("topmusic.db", &database);
-	if (rc)
-		printf("Error opening database \n");
-	else
-		printf("Database opened successfully \n");
-
-	/*rc = sqlite3_prepare_v2(database, "SELECT * from admin", -1, &statement, 0);
-	if (rc != SQLITE_OK)
-	{
-		printf("Error fetching data \n");
-		sqlite3_close(database);
-	}
-
-	rc = sqlite3_step(statement);
-	if (rc == SQLITE_ROW)
-	{
-		printf("%s\n", sqlite3_column_text(statement, 0));
-	}
-
-	sqlite3_finalize(statement);
-	sqlite3_close(database); */
-
-	//sqlite3_close(database);
 
 	/* crearea unui socket */
 	if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
@@ -126,13 +155,11 @@ int main()
 
 			while (1)
 			{
-				char username[100], password[100];
 				// copil
 				close(sd);
 				/* s-a realizat conexiunea, se astepta mesajul */
 				bzero(input, 1000);
 				printf("Welcome to TopMusic - Server\n");
-				//printf("%s\n", sqlite3_libversion());
 				printf("Awaiting input from client...\n");
 				fflush(stdout);
 
@@ -164,9 +191,10 @@ int main()
 					bzero(password, 100);
 					read(client, username, BUF);
 					printf("Username-ul este %s \n", username);
+					insertUser();
+
 					read(client, password, BUF);
 					printf("Parola este %s \n", password);
-					
 				}
 
 				// --- FUNCTIE LOGIN -----------
@@ -186,7 +214,7 @@ int main()
 					bzero(output, BUF);
 					strcpy(output, "Error! Unknown command.\n");
 					bzero(input, BUF);
-								}
+				}
 
 				/*pregatim mesajul de raspuns */
 				//bzero(output, BUF);
