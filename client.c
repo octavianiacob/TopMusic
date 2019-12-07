@@ -74,29 +74,26 @@ int main(int argc, char *argv[])
       printf("Please provide an username:\n");
       read(0, msg, sizeof(msg)); // citeste de la tastatura username
       msg[strlen(msg) - 1] = 0;
-      write(sd, msg, sizeof(msg)); // scrie la server username-ul
+      write(sd, msg, sizeof(msg)); // scrie la server username-ul (1)
+      bzero(msg, 1000);
+
+
+      read(sd, msg, sizeof(msg)); // citeste valid/invalid de la server; (2)
+      if(strcmp(msg,"valid")==0)
+      {
       bzero(msg, 1000);
       printf("Please provide a password:\n");
       read(0, msg, sizeof(msg)); // citire de la tastatura
       msg[strlen(msg) - 1] = 0;
-      write(sd, msg, sizeof(msg)); // scrie la server parola
+      write(sd, msg, sizeof(msg)); // scrie la server parola (3)
       bzero(msg, 1000);
       printf("Registration successful.\n");
-
-      /*read(sd, msg, sizeof(msg)); // citeste valid/invalid de la server;
-      
-      if(strcmp(msg,"valid")==0)
-      {
-      bzero(msg, 1000);
-      
       }
       else
-        {
-          bzero(msg, 1000);
-          printf("This username is taken. Try again.\n");
-        } */
-
-
+      {
+        bzero(msg, 1000);
+        printf("This username is taken. Try again.\n");
+      }
       
     }
     else if (strcmp(msg, "login") == 0)
@@ -113,12 +110,13 @@ int main(int argc, char *argv[])
       msg[strlen(msg) - 1] = 0;
       printf("Login successful.\n");
     }
-
-    write(sd, msg, sizeof(msg)); // scrierea catre server
-    bzero(msg, 1000);
-
-    read(sd, msg, sizeof(msg)); // citire mesaj de la server
-    printf("%s\n", msg);
+    else if (strcmp(msg, "exit") == 0)
+    {
+      write(sd, msg, sizeof(msg));//scrie exit la server
+      bzero(msg, 1000);
+      printf("Connection Terminated.\n");
+      break;
+    }
   }
 
   close(sd);

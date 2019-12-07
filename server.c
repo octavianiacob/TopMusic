@@ -194,8 +194,8 @@ int main()
 
 				if (strcmp(input, "exit") == 0)
 				{
-					printf("Ending connection with client...");
-					write(client, "Connection terminated.\n", BUF);
+					printf("Ending connection with client...\n");
+					//write(client, "Connection terminated.\n", BUF);
 					close(client);
 					exit(0);
 				}
@@ -206,23 +206,24 @@ int main()
 				{
 					bzero(username, 100);
 					bzero(password, 100);
-					read(client, username, BUF); // citeste username de la client
+					read(client, username, BUF); // citeste username de la client (1)
 					printf("Username-ul este %s \n", username);
-					insertUser(username);
-					read(client, password, BUF); //citeste parola de la client
-					printf("Parola este %s \n", password);
-					insertPassword(username, password);
-					
-					/*if(isValidUser(username)==1)
+
+
+					if(isValidUser(username)==1)
 						{
-							write(client,"valid", BUF); //scrie valid la client
-							
+							write(client,"valid", BUF); //scrie valid la client (2)
+							printf("USERNAME VALID \n");
+							insertUser(username);
+							read(client, password, BUF); //citeste parola de la client (3)
+							printf("Parola este %s \n", password);
+							insertPassword(username, password);
 						}
 					else
 						{
-							write(client,"invalid", BUF); //scrie invalid la client
-							printf("E gresit");
-						} */
+							printf("USERNAME INVALID \n");
+						}
+
 
 					
 				}
