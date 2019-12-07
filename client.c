@@ -76,10 +76,8 @@ int main(int argc, char *argv[])
       msg[strlen(msg) - 1] = 0;
       write(sd, msg, sizeof(msg)); // scrie la server username-ul (1)
       bzero(msg, 1000);
-
-
       read(sd, msg, sizeof(msg)); // citeste valid/invalid de la server; (2)
-      if(strcmp(msg,"valid")==0)
+      if (strcmp(msg, "valid") == 0)
       {
       bzero(msg, 1000);
       printf("Please provide a password:\n");
@@ -98,16 +96,29 @@ int main(int argc, char *argv[])
     }
     else if (strcmp(msg, "login") == 0)
     {
-      write(sd, msg, sizeof(msg));
+      write(sd, msg, sizeof(msg)); // scrie login la server
       bzero(msg, 1000);
       printf("Enter your username:\n");
-      read(0, msg, sizeof(msg)); // citire de la tastatura
+      read(0, msg, sizeof(msg));
       msg[strlen(msg) - 1] = 0;
-      write(sd, msg, sizeof(msg));
+      write(sd, msg, sizeof(msg)); // scrie username la server
       bzero(msg, 1000);
       printf("Enter your password:\n");
-      read(0, msg, sizeof(msg)); // citire de la tastatura
+      read(0, msg, sizeof(msg));
       msg[strlen(msg) - 1] = 0;
+      write(sd, msg, sizeof(msg)); // scrie parola la server
+      bzero(msg, 1000);
+
+      /*read(sd, msg, sizeof(msg)); // citeste daca e admin sau user de la server
+      if(strcmp(msg,"admin")==0)
+      {
+
+      }
+      else if (strcmp(msg,"user")==0)
+      {
+
+      }
+      */
       printf("Login successful.\n");
     }
     else if (strcmp(msg, "exit") == 0)
