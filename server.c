@@ -21,7 +21,7 @@
 extern int errno;
 
 char username[100], password[100];
-int isLogged = 0;
+int loginFlag, adminFlag;
 // conexiune baza de date
 sqlite3 *database;
 sqlite3_stmt *statement;
@@ -99,7 +99,6 @@ int isAdmin(char username[], char password[])
 	char isAdmin[BUF];
 	bzero(isAdmin, BUF);
 	isAdmin[0] = '0';
-
 	rc = sqlite3_open("topmusic.db", &database);
 	if (rc)
 		printf("Error opening database. \n");
@@ -111,28 +110,52 @@ int isAdmin(char username[], char password[])
 	rc = sqlite3_step(statement);
 	if (rc == SQLITE_ROW)
 		sprintf(isAdmin, sqlite3_column_text(statement, 0));
-	printf(isAdmin);
 	sqlite3_finalize(statement);
 	free(query);
 	sqlite3_close(database);
-	
 
-	if (strcmp(isAdmin, '0') == 0) // insemna ca nu a gasit, incerc sa il loghez ca user
+	if (strcmp(isAdmin, "0") == 0)
 	{
-		printf("IS NOT ADMIN");
 		return 0;
 	}
 	else
 	{
-		printf("IS ADMIN");
-		isAdmin[0] = '1';
+		return 1;
+	}
+}
+
+int isLoggedIn(char username[], char password[])
+{
+	char isLoggedIn[BUF];
+	bzero(isLoggedIn, BUF);
+	isLoggedIn[0] = '0';
+	rc = sqlite3_open("topmusic.db", &database);
+	if (rc)
+		printf("Error opening database. \n");
+	else
+		printf("Database opened successfully. \n");
+	asprintf(&query, "SELECT * FROM user WHERE user_name = \"%s\" AND  user_password = \"%s\";", username, password);
+	printf("The following SQL Query will run: '%s'\n", query);
+	rc = sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
+	rc = sqlite3_step(statement);
+	if (rc == SQLITE_ROW)
+		sprintf(isLoggedIn, sqlite3_column_text(statement, 0));
+	sqlite3_finalize(statement);
+	free(query);
+	sqlite3_close(database);
+
+	if (strcmp(isLoggedIn, "0") == 0)
+	{
+		return 0;
+	}
+	else
+	{
 		return 1;
 	}
 }
 
 int main()
 {
-	//pquery = &query[0];
 	struct sockaddr_in server; // structura folosita de server
 	struct sockaddr_in from;
 	char input[1000];		 //mesajul primit de la client
@@ -178,6 +201,8 @@ int main()
 	{
 		int client;
 		int length = sizeof(from);
+		loginFlag = 0;
+		adminFlag = 0;
 
 		printf("Listening on port %d...\n", PORT);
 		fflush(stdout);
@@ -215,6 +240,7 @@ int main()
 				bzero(input, 1000);
 				printf("Welcome to TopMusic - Server\n");
 				printf("Awaiting input from client...\n");
+				printf("LOGIN FLAG = %d , ADMIN FLAG = %d \n", loginFlag, adminFlag);
 				fflush(stdout);
 
 				/* citirea mesajului */
@@ -273,15 +299,41 @@ int main()
 				{
 					bzero(username, 100);
 					bzero(password, 100);
-					read(client, username, BUF);
+					read(client, username, BUF); // citeste username de la client (1)
 					printf("Username-ul este %s \n", username);
-					read(client, password, BUF);
+					read(client, password, BUF); // citeste parola de la client (2)
 					printf("Parola este %s \n", password);
-					if(isAdmin(username,password)==1)
-						printf("IS ADMIN");
+					if (isAdmin(username, password) == 1)
+					{
+						printf("IS ADMIN\n");
+						adminFlag = 1;
+						loginFlag = 1;
+						bzero(output, BUF);
+						strcat(output, "admin");
+						write(client, output, BUF); // scrie logat ca admin la client(3)
+					}
+
+					else if (isLoggedIn(username, password) == 1)
+					{
+						printf("IS REGULAR USER\n");
+						adminFlag = 0;
+						loginFlag = 1;
+						bzero(output, BUF);
+						strcat(output, "user");
+						write(client, output, BUF); // scrie logat ca user la client(3)
+					}
 					else
-						printf("IS NOT ADMIN");
+					{
+						printf("WRONG CREDENTIALS\n");
+						adminFlag = 0;
+						loginFlag = 0;
+						bzero(output, BUF);
+						strcat(output, "error");
+						write(client, output, BUF); // scrie eroare la login la client(3)
+					}
 				}
+
+				// --- CAZ EROARE -----------
 
 				else
 				{
@@ -291,9 +343,9 @@ int main()
 					bzero(input, BUF);
 				}
 
-				printf(" Sending response back to client: %s\n", output);
+				/* printf(" Sending response back to client: %s\n", output);
 
-				/* returnam mesajul clientului
+				 //returnam mesajul clientului
 				if (write(client, output, BUF) <= 0)
 				{
 					perror("Eroare la write() catre client.\n");
