@@ -29,7 +29,7 @@ void menu()
   else if (loginFlag == 1 && adminFlag == 0)
     printf("Welcome to TopMusic!\n You are logged in as user.\n Please enter one of the following commands:\n 1) addSong\n 2) vote\n 3) exit\n 4) commands\n");
   else if (loginFlag == 1 && adminFlag == 1)
-    printf("Welcome to TopMusic!\n You are logged in as admin.\n Please enter one of the following commands:\n 1) command1\n 2) command2\n 3) exit\n 4) commands\n");
+    printf("Welcome to TopMusic!\n You are logged in as admin.\n Please enter one of the following commands:\n 1) addSong\n 2) vote\n 3) exit\n 4) commands\n");
 }
 
 int main(int argc, char *argv[])
@@ -130,19 +130,22 @@ int main(int argc, char *argv[])
         read(sd, msg, sizeof(msg)); // citeste daca e admin sau user de la server (3)
         if (strcmp(msg, "admin") == 0)
         {
-          printf("Login as admin successful.\n");
+          printf("Login as admin successful.\n\n");
+          menu();
           adminFlag = 1;
           loginFlag = 1;
         }
         else if (strcmp(msg, "user") == 0)
         {
-          printf("Login as user successful.\n");
+          printf("Login as user successful.\n\n");
+          menu();
           adminFlag = 0;
           loginFlag = 1;
         }
         else
         {
           printf("Login failed. Please try again.\n");
+          menu();
           adminFlag = 0;
           loginFlag = 0;
         }
@@ -150,6 +153,48 @@ int main(int argc, char *argv[])
       else
         printf("You are already logged in. You must be signed out to perform this action.\n");
     }
+
+    else if(strcmp(msg, "addSong") == 0)
+    {
+      if(loginFlag == 1)
+      {
+        write(sd, msg, sizeof(msg)); // scrie addSong la server
+        bzero(msg, 1000);
+        printf("Enter the song name:\n");
+        read(0, msg, sizeof(msg));
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie song_name la server (1)
+        bzero(msg, 1000);
+        printf("Enter the song artist:\n");
+        read(0, msg, sizeof(msg));
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie song_artist la server (2)
+        bzero(msg, 1000);
+        printf("Enter the song URL:\n");
+        read(0, msg, sizeof(msg));
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie link la server (3)
+        bzero(msg, 1000);
+        printf("Enter the song genre1:\n");
+        read(0, msg, sizeof(msg));
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie genre1 la server (4)
+        bzero(msg, 1000);
+        printf("Enter the song genre2:\n");
+        read(0, msg, sizeof(msg));
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie genre2 la server (5)
+        bzero(msg, 1000);
+        printf("Enter the song genre3:\n");
+        read(0, msg, sizeof(msg));
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie genre3 la server (6)
+        bzero(msg, 1000);
+        printf("Song added successfully.\n");
+      }
+      else
+        printf("You must be logged in to perform this action.\n");
+        }
 
     else if (strcmp(msg, "exit") == 0)
     {

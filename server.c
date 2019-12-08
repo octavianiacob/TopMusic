@@ -154,6 +154,36 @@ int isLoggedIn(char username[], char password[])
 	}
 }
 
+void insertSong(char song_name[], char song_artist[], char song_link[], char genre1, char genre2, char genre3)
+{
+	printf("A INTRAT PE FUNCTIE\n");
+	rc = sqlite3_open("topmusic.db", &database);
+	if (rc)
+		printf("Error opening database.\n");
+	else
+		printf("Database opened successfully.\n");
+	printf("INAINTE DE ASPRINTF\n");
+	//asprintf(&query, "insert into songs (song_name, song_artist, link, genre1, genre2, genre3) values (\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\");", song_name, song_artist, song_link, genre1, genre2, genre3);
+	asprintf(&query, "insert into songs (song_name, song_artist, link, genre1) values (\"%s\", \"%s\", \"%s\", \"%s\");", song_name, song_artist, song_link);
+	printf("The following SQL Query will run: '%s'\n", query);
+	printf("INAINTE DE PREPARE V2\n");
+	printf("QUERY-UL ESTE: %s\n", query);
+	sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
+	printf("DUPA PREPARE V2\n");
+	rc = sqlite3_step(statement);
+	printf("DUPA STEP\n");
+	if (rc != SQLITE_DONE)
+		printf("ERROR inserting data: %s\n", sqlite3_errmsg(database));
+	else
+		printf("Song inserted successfully.\n");
+	printf("DUPA SQLITE_DONE\n");
+	sqlite3_finalize(statement);
+	printf("DUPA FINALIZARE\n");
+	free(query);
+	sqlite3_close(database);
+	printf("DUPA INCHIDERE\n");
+}
+
 int main()
 {
 	struct sockaddr_in server; // structura folosita de server
@@ -331,6 +361,28 @@ int main()
 						strcat(output, "error");
 						write(client, output, BUF); // scrie eroare la login la client(3)
 					}
+				}
+
+				// --- FUNCTIE ADD SONG -----
+
+				else if (strcmp(input, "addSong") == 0)
+				{
+					char song_name[BUF], song_artist[BUF], song_link[BUF], genre1[BUF], genre2[BUF], genre3[BUF];
+					
+					read(client, song_name, BUF); // citeste song_name de la client (1);
+					printf("Song name este %s \n", song_name);
+					read(client, song_artist, BUF); // citeste song_artist de la client (2);
+					printf("Song artist este %s \n", song_artist);
+					read(client, song_link, BUF); // citeste link de la client (3);
+					printf("link este %s \n", song_link);
+					read(client, genre1, BUF); // citeste genre1 de la client (4);
+					printf("Song genre1 este %s \n", genre1);
+					read(client, genre2, BUF); // citeste genre2 de la client (5);
+					printf("Song genre2 este %s \n", genre2);
+					read(client, genre3, BUF); // citeste genre3 de la client (6);
+					printf("Song genre3 este %s \n", genre3);
+					insertSong(song_name, song_artist, song_link, genre1, genre2, genre3);
+					printf("Song inserted successfully.\n");
 				}
 
 				// --- CAZ EROARE -----------
