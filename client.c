@@ -29,7 +29,7 @@ void menu()
   else if (loginFlag == 1 && adminFlag == 0)
     printf("Welcome to TopMusic!\n You are logged in as user.\n Please enter one of the following commands:\n 1) addSong\n 2) vote\n 3) exit\n 4) commands\n");
   else if (loginFlag == 1 && adminFlag == 1)
-    printf("Welcome to TopMusic!\n You are logged in as admin.\n Please enter one of the following commands:\n 1) addSong\n 2) vote\n 3) exit\n 4) commands\n");
+    printf("Welcome to TopMusic!\n You are logged in as admin.\n Please enter one of the following commands:\n 1) addSong\n 2) addGenre\n 3) vote\n 4) exit\n 5) commands\n");
 }
 
 int main(int argc, char *argv[])
@@ -131,23 +131,23 @@ int main(int argc, char *argv[])
         if (strcmp(msg, "admin") == 0)
         {
           printf("Login as admin successful.\n\n");
-          menu();
           adminFlag = 1;
           loginFlag = 1;
+          menu();
         }
         else if (strcmp(msg, "user") == 0)
         {
           printf("Login as user successful.\n\n");
-          menu();
           adminFlag = 0;
           loginFlag = 1;
+          menu();
         }
         else
         {
           printf("Login failed. Please try again.\n");
-          menu();
           adminFlag = 0;
           loginFlag = 0;
+          menu();
         }
       }
       else
@@ -196,6 +196,27 @@ int main(int argc, char *argv[])
         printf("You must be logged in to perform this action.\n");
         }
 
+    else if (strcmp(msg, "addGenre") == 0)
+    {
+      if(loginFlag == 1 && adminFlag == 1)
+      {
+        write(sd, msg, sizeof(msg)); // scrie addGenre la server
+        bzero(msg, 1000);
+        printf("Enter the genre name:\n");
+        read(0, msg, sizeof(msg));
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie genre_name la server (1)
+        bzero(msg, 1000);
+        printf("Enter a genre description (optional):\n");
+        read(0, msg, sizeof(msg));
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie descriere la server (2)
+        bzero(msg, 1000);
+        printf("Genre added successfully.\n");
+      }
+      else
+        printf("You must be logged in as admin to perform this action.\n");
+    }
     else if (strcmp(msg, "exit") == 0)
     {
       write(sd, msg, sizeof(msg)); //scrie exit la server
@@ -208,6 +229,9 @@ int main(int argc, char *argv[])
     {
       menu();
     }
+
+    else
+      printf("Unknown command. Type \"commands\" to list all the available commands.\n");
   }
 
   close(sd);

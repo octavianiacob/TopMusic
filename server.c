@@ -184,6 +184,35 @@ void insertSong(char song_name[], char song_artist[], char song_link[], char gen
 	printf("DUPA INCHIDERE\n");
 }
 
+void insertGenre(char genre_name[], char genre_description[])
+{
+	printf("A INTRAT PE FUNCTIE\n");
+	rc = sqlite3_open("topmusic.db", &database);
+	if (rc)
+		printf("Error opening database.\n");
+	else
+		printf("Database opened successfully.\n");
+	printf("INAINTE DE ASPRINTF\n");
+	asprintf(&query, "insert into genres (genre_name, genre_description) values (\"%s\", \"%s\");", genre_name, genre_description);
+	printf("The following SQL Query will run: '%s'\n", query);
+	printf("INAINTE DE PREPARE V2\n");
+	printf("QUERY-UL ESTE: %s\n", query);
+	sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
+	printf("DUPA PREPARE V2\n");
+	rc = sqlite3_step(statement);
+	printf("DUPA STEP\n");
+	if (rc != SQLITE_DONE)
+		printf("ERROR inserting data: %s\n", sqlite3_errmsg(database));
+	else
+		printf("Genre inserted successfully.\n");
+	printf("DUPA SQLITE_DONE\n");
+	sqlite3_finalize(statement);
+	printf("DUPA FINALIZARE\n");
+	free(query);
+	sqlite3_close(database);
+	printf("DUPA INCHIDERE\n");
+}
+
 int main()
 {
 	struct sockaddr_in server; // structura folosita de server
@@ -383,6 +412,19 @@ int main()
 					printf("Song genre3 este %s \n", genre3);
 					insertSong(song_name, song_artist, song_link, genre1, genre2, genre3);
 					printf("Song inserted successfully.\n");
+				}
+
+				else if (strcmp(input, "addGenre") == 0)
+				{
+					char genre_name[BUF], genre_description[BUF];
+					read(client, genre_name, BUF); // citeste genre name de la client (1);
+					printf("Song name este %s \n", genre_name);
+					read(client, genre_description, BUF); // citeste genre description de la client (2);
+					printf("Song artist este %s \n", genre_description);
+					if(strcmp(genre_description,"")==0)
+						strcat(genre_description, "No description");
+					insertGenre(genre_name, genre_description);
+					printf("Genre inserted successfully.\n");
 				}
 
 				// --- CAZ EROARE -----------
