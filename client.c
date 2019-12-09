@@ -27,9 +27,9 @@ void menu()
   if (loginFlag == 0)
     printf("Welcome to TopMusic!\n Please enter one of the following commands:\n 1) register\n 2) login\n 3) exit\n 4) commands\n");
   else if (loginFlag == 1 && adminFlag == 0)
-    printf("Welcome to TopMusic!\n You are logged in as user.\n Please enter one of the following commands:\n 1) addSong\n 2) vote\n 3) exit\n 4) commands\n");
+    printf("Welcome to TopMusic!\n You are logged in as user.\n Please enter one of the following commands:\n 1) addSong\n 2) vote\n 3) exit\n 4) commands\n 5) showGenres \n");
   else if (loginFlag == 1 && adminFlag == 1)
-    printf("Welcome to TopMusic!\n You are logged in as admin.\n Please enter one of the following commands:\n 1) addSong\n 2) addGenre\n 3) vote\n 4) exit\n 5) commands\n");
+    printf("Welcome to TopMusic!\n You are logged in as admin.\n Please enter one of the following commands:\n 1) addSong\n 2) addGenre\n 3) vote\n 4) exit\n 5) commands\n 6) showGenres \n");
 }
 
 int main(int argc, char *argv[])
@@ -228,6 +228,23 @@ int main(int argc, char *argv[])
     else if (strcmp(msg, "commands") == 0)
     {
       menu();
+    }
+
+    else if (strcmp(msg, "showGenres") == 0)
+    {
+      if(loginFlag == 1)
+      {
+        printf("inainte de write\n");
+        write(sd, msg, sizeof(msg)); // scrie showGenres la server
+        printf("dupa de write\n");
+        bzero(msg, 1000);
+        read(sd, msg, sizeof(msg));
+        printf("dupa read\n");
+        printf("gebuur: %s\n", msg);
+        bzero(msg, 1000);
+      }
+      else 
+        printf("You must be logged in to perform this action.\n");
     }
 
     else

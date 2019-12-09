@@ -213,6 +213,42 @@ void insertGenre(char genre_name[], char genre_description[])
 	printf("DUPA INCHIDERE\n");
 }
 
+char showGenres()
+{
+	int genre_count = 0;
+	char genresDisplay[1000];
+	rc = sqlite3_open("topmusic.db", &database);
+	if (rc)
+		printf("Error opening database. \n");
+	else
+		printf("Database opened successfully. \n");
+	asprintf(&query, "SELECT * FROM genres;");
+	printf("The following SQL Query will run: '%s'\n", query);
+	if (sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL) != SQLITE_OK)
+	{
+		sqlite3_close(database);
+		printf("Can't retrieve data: %s\n", sqlite3_errmsg(database));
+	}
+	strcat(genresDisplay, "ID     Genre     Description\n----------------------------\n \n");
+	while (sqlite3_step(statement) == SQLITE_ROW)
+	{
+			   strcat(genresDisplay, "  ");
+			   strcat(genresDisplay, sqlite3_column_text(statement, 0));
+			   strcat(genresDisplay, "     ");
+			   strcat(genresDisplay, sqlite3_column_text(statement, 1));
+			   strcat(genresDisplay, "     ");
+			   strcat(genresDisplay, sqlite3_column_text(statement, 2));
+			   strcat(genresDisplay, "\n");
+		genre_count++;
+	}
+	printf("Number of genres: %d\n", genre_count);
+	sqlite3_finalize(statement);
+	free(query);
+	sqlite3_close(database);
+	//printf("Variabila genresDisplay are:\n %s\n", genresDisplay);
+	return genresDisplay;
+}
+
 int main()
 {
 	struct sockaddr_in server; // structura folosita de server
@@ -397,7 +433,7 @@ int main()
 				else if (strcmp(input, "addSong") == 0)
 				{
 					char song_name[BUF], song_artist[BUF], song_link[BUF], genre1[BUF], genre2[BUF], genre3[BUF];
-					
+
 					read(client, song_name, BUF); // citeste song_name de la client (1);
 					printf("Song name este %s \n", song_name);
 					read(client, song_artist, BUF); // citeste song_artist de la client (2);
@@ -414,6 +450,8 @@ int main()
 					printf("Song inserted successfully.\n");
 				}
 
+				// --- FUNCTIE ADD GENRES -----
+
 				else if (strcmp(input, "addGenre") == 0)
 				{
 					char genre_name[BUF], genre_description[BUF];
@@ -421,10 +459,21 @@ int main()
 					printf("Song name este %s \n", genre_name);
 					read(client, genre_description, BUF); // citeste genre description de la client (2);
 					printf("Song artist este %s \n", genre_description);
-					if(strcmp(genre_description,"")==0)
+					if (strcmp(genre_description, "") == 0)
 						strcat(genre_description, "No description");
 					insertGenre(genre_name, genre_description);
 					printf("Genre inserted successfully.\n");
+				}
+
+				// --- FUNCTIE SHOW GENRES
+
+				else if (strcmp(input, "showGenres") == 0)
+				{
+					printf("A intrat pe functie\n");
+					char gen[1000];
+					strcpy(gen, showGenres());
+					printf("GEN: %s\n", gen);
+					write(client, gen, 1000); // trimite la client genres
 				}
 
 				// --- CAZ EROARE -----------
