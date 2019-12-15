@@ -136,9 +136,10 @@ int main(int argc, char *argv[])
         printf("You are already logged in. You must be signed out to perform this action.\n");
     }
 
-    else if(strcmp(msg, "addSong") == 0)
+    else if (strcmp(msg, "addSong") == 0)
     {
-      if(loginFlag == 1)
+      char genreList[1000];
+      if (loginFlag == 1)
       {
         write(sd, msg, sizeof(msg)); // scrie addSong la server
         bzero(msg, 1000);
@@ -157,30 +158,66 @@ int main(int argc, char *argv[])
         msg[strlen(msg) - 1] = 0;
         write(sd, msg, sizeof(msg)); // scrie link la server (3)
         bzero(msg, 1000);
-        printf("Enter the song genre1:\n");
+        read(sd, msg, sizeof(msg)); // citeste lista de genres de la server (4)
+        strcpy(genreList, msg);
+        printf("%s\n Select genre1 from these genres:\n ", genreList);
+        bzero(msg, 1000);
         read(0, msg, sizeof(msg));
         msg[strlen(msg) - 1] = 0;
-        write(sd, msg, sizeof(msg)); // scrie genre1 la server (4)
+        write(sd, msg, sizeof(msg)); // scrie genre1 la server (5)
         bzero(msg, 1000);
-        printf("Enter the song genre2:\n");
-        read(0, msg, sizeof(msg));
-        msg[strlen(msg) - 1] = 0;
-        write(sd, msg, sizeof(msg)); // scrie genre2 la server (5)
-        bzero(msg, 1000);
-        printf("Enter the song genre3:\n");
-        read(0, msg, sizeof(msg));
-        msg[strlen(msg) - 1] = 0;
-        write(sd, msg, sizeof(msg)); // scrie genre3 la server (6)
-        bzero(msg, 1000);
-        printf("Song added successfully.\n");
+        read(sd, msg, sizeof(msg));    // citeste validare genre1 (6)
+        if (strcmp(msg, "valid") == 0) //validare genre1
+        {
+          bzero(msg, 1000);
+          printf("Selected genre is valid \n Please enter genre 2 or leave the field blank \n");
+
+          printf("%s\n Select genre2 from these genres:\n ", genreList);
+          read(0, msg, sizeof(msg));
+          msg[strlen(msg) - 1] = 0;
+          write(sd, msg, sizeof(msg)); // scrie genre2 la server (7)
+          bzero(msg, 1000);
+          read(sd, msg, sizeof(msg));    // citeste validare genre2 (8)
+          if (strcmp(msg, "valid") == 0) //validare genre2
+          {
+            bzero(msg, 1000);
+            printf("Selected genre is valid \n Please enter genre 3 or leave the field blank \n");
+
+            printf("%s\n Select genre3 from these genres:\n ", genreList);
+            read(0, msg, sizeof(msg));
+            msg[strlen(msg) - 1] = 0;
+            write(sd, msg, sizeof(msg)); // scrie genre3 la server (9)
+            bzero(msg, 1000);
+            read(sd, msg, sizeof(msg));    // citeste validare genre3 (10)
+            if (strcmp(msg, "valid") == 0) // validare genre3
+            {
+              printf("Song added successfully.\n");
+            }
+            else // eroare la genre3
+            {
+              printf("Song was not added.  %s. Please try again.\n", msg);
+              bzero(msg, 1000);
+            }
+          }
+          else // eroare la genre2
+          {
+            printf("Song was not added.  %s. Please try again.\n", msg);
+            bzero(msg, 1000);
+          }
+        }
+        else // eroare la genre1
+        {
+          printf("Song was not added. %s. Please try again.\n", msg);
+          bzero(msg, 1000);
+        }
       }
       else
         printf("You must be logged in to perform this action.\n");
-        }
+    }
 
     else if (strcmp(msg, "addGenre") == 0)
     {
-      if(loginFlag == 1 && adminFlag == 1)
+      if (loginFlag == 1 && adminFlag == 1)
       {
         write(sd, msg, sizeof(msg)); // scrie addGenre la server
         bzero(msg, 1000);
@@ -214,18 +251,15 @@ int main(int argc, char *argv[])
 
     else if (strcmp(msg, "showGenres") == 0)
     {
-      if(loginFlag == 1)
+      if (loginFlag == 1)
       {
-        printf("inainte de write\n");
         write(sd, msg, sizeof(msg)); // scrie showGenres la server
-        printf("dupa de write\n");
         bzero(msg, 1000);
         read(sd, msg, sizeof(msg));
-        printf("dupa read\n");
-        printf("gebuur: %s\n", msg);
+        printf("%s--------------------------------\n", msg);
         bzero(msg, 1000);
       }
-      else 
+      else
         printf("You must be logged in to perform this action.\n");
     }
 
