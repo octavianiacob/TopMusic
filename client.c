@@ -19,9 +19,9 @@ void menu()
   if (loginFlag == 0)
     printf("Welcome to TopMusic!\n Please enter one of the following commands:\n 1) register\n 2) login\n 3) exit\n 4) commands\n");
   else if (loginFlag == 1 && adminFlag == 0)
-    printf("Welcome to TopMusic!\n You are logged in as user.\n Please enter one of the following commands:\n 1) addSong\n 2) vote\n 3) exit\n 4) commands\n 5) showGenres \n");
+    printf("Welcome to TopMusic!\n You are logged in as user.\n Please enter one of the following commands:\n 1) addSong\n 2) vote\n 3) exit\n 4) commands\n 5) showGenres \n 6) showSongs \n");
   else if (loginFlag == 1 && adminFlag == 1)
-    printf("Welcome to TopMusic!\n You are logged in as admin.\n Please enter one of the following commands:\n 1) addSong\n 2) addGenre\n 3) vote\n 4) exit\n 5) commands\n 6) showGenres \n");
+    printf("Welcome to TopMusic!\n You are logged in as admin.\n Please enter one of the following commands:\n 1) addSong\n 2) addGenre\n 3) vote\n 4) exit\n 5) commands\n 6) showGenres \n 7) showSongs \n");
 }
 
 int main(int argc, char *argv[])
@@ -258,6 +258,39 @@ int main(int argc, char *argv[])
         read(sd, msg, sizeof(msg));
         printf("%s--------------------------------\n", msg);
         bzero(msg, 1000);
+      }
+      else
+        printf("You must be logged in to perform this action.\n");
+    }
+
+    else if (strcmp(msg, "showSongs") == 0)
+    {
+      if (loginFlag == 1)
+      {
+        write(sd, msg, sizeof(msg)); // scrie showSongs la server
+        bzero(msg, 1000);
+        read(sd, msg, sizeof(msg));
+        printf("\n%s---------------------------------------------------------------\n", msg);
+        bzero(msg, 1000);
+      }
+      else
+        printf("You must be logged in to perform this action.\n");
+    }
+
+    else if (strcmp(msg, "vote") == 0)
+    {
+      if (loginFlag == 1)
+      {
+        write(sd, msg, sizeof(msg)); // scrie vote la server
+        bzero(msg, 1000);
+        read(sd, msg, sizeof(msg)); // citeste lista de melodii de la server (1)
+        printf("%s \nEnter the ID of the song you want to vote. \n", msg);
+        bzero(msg, 1000);
+        read(0, msg, sizeof(msg)); // citeste de la tastatura ID
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie ID la server (2)
+        bzero(msg, 1000);
+        printf("Song was voted successfully.\n");
       }
       else
         printf("You must be logged in to perform this action.\n");
