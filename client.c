@@ -12,6 +12,7 @@ extern int errno;
 int port;
 int loginFlag = 0;
 int adminFlag = 0;
+#define BUF 1000
 
 void menu()
 {
@@ -28,7 +29,7 @@ int main(int argc, char *argv[])
 {
   int sd;
   struct sockaddr_in server;
-  char msg[1000];
+  char msg[BUF];
 
   if (argc != 3)
   {
@@ -56,7 +57,7 @@ int main(int argc, char *argv[])
   while (1)
   {
 
-    bzero(msg, 1000);
+    bzero(msg, BUF);
     read(0, msg, sizeof(msg)); // citire de comanda de la tastatura
     msg[strlen(msg) - 1] = 0;
     //-------------------------------------------------------------
@@ -66,26 +67,26 @@ int main(int argc, char *argv[])
       if (loginFlag == 0)
       {
         write(sd, msg, sizeof(msg)); //scrie register la server
-        bzero(msg, 1000);
+        bzero(msg, BUF);
         printf("Please provide an username:\n");
         read(0, msg, sizeof(msg)); // citeste de la tastatura username
         msg[strlen(msg) - 1] = 0;
         write(sd, msg, sizeof(msg)); // scrie la server username-ul (1)
-        bzero(msg, 1000);
+        bzero(msg, BUF);
         read(sd, msg, sizeof(msg)); // citeste valid/invalid de la server; (2)
         if (strcmp(msg, "valid") == 0)
         {
-          bzero(msg, 1000);
+          bzero(msg, BUF);
           printf("Please provide a password:\n");
           read(0, msg, sizeof(msg)); // citire de la tastatura
           msg[strlen(msg) - 1] = 0;
           write(sd, msg, sizeof(msg)); // scrie la server parola (3)
-          bzero(msg, 1000);
+          bzero(msg, BUF);
           printf("Registration successful.\n");
         }
         else
         {
-          bzero(msg, 1000);
+          bzero(msg, BUF);
           printf("This username is taken. Try again.\n");
         }
       }
@@ -98,17 +99,17 @@ int main(int argc, char *argv[])
       if (loginFlag == 0)
       {
         write(sd, msg, sizeof(msg)); // scrie login la server
-        bzero(msg, 1000);
+        bzero(msg, BUF);
         printf("Enter your username:\n");
         read(0, msg, sizeof(msg));
         msg[strlen(msg) - 1] = 0;
         write(sd, msg, sizeof(msg)); // scrie username la server (1)
-        bzero(msg, 1000);
+        bzero(msg, BUF);
         printf("Enter your password:\n");
         read(0, msg, sizeof(msg));
         msg[strlen(msg) - 1] = 0;
         write(sd, msg, sizeof(msg)); // scrie parola la server (2)
-        bzero(msg, 1000);
+        bzero(msg, BUF);
         read(sd, msg, sizeof(msg)); // citeste daca e admin sau user de la server (3)
         if (strcmp(msg, "admin") == 0)
         {
@@ -138,56 +139,56 @@ int main(int argc, char *argv[])
 
     else if (strcmp(msg, "addSong") == 0)
     {
-      char genreList[1000];
+      char genreList[BUF];
       if (loginFlag == 1)
       {
         write(sd, msg, sizeof(msg)); // scrie addSong la server
-        bzero(msg, 1000);
+        bzero(msg, BUF);
         printf("Enter the song name:\n");
         read(0, msg, sizeof(msg));
         msg[strlen(msg) - 1] = 0;
         write(sd, msg, sizeof(msg)); // scrie song_name la server (1)
-        bzero(msg, 1000);
+        bzero(msg, BUF);
         printf("Enter the song artist:\n");
         read(0, msg, sizeof(msg));
         msg[strlen(msg) - 1] = 0;
         write(sd, msg, sizeof(msg)); // scrie song_artist la server (2)
-        bzero(msg, 1000);
+        bzero(msg, BUF);
         printf("Enter the song URL:\n");
         read(0, msg, sizeof(msg));
         msg[strlen(msg) - 1] = 0;
         write(sd, msg, sizeof(msg)); // scrie link la server (3)
-        bzero(msg, 1000);
+        bzero(msg, BUF);
         read(sd, msg, sizeof(msg)); // citeste lista de genres de la server (4)
         strcpy(genreList, msg);
         printf("%s\n Select genre1 from these genres:\n ", genreList);
-        bzero(msg, 1000);
+        bzero(msg, BUF);
         read(0, msg, sizeof(msg));
         msg[strlen(msg) - 1] = 0;
         write(sd, msg, sizeof(msg)); // scrie genre1 la server (5)
-        bzero(msg, 1000);
+        bzero(msg, BUF);
         read(sd, msg, sizeof(msg));    // citeste validare genre1 (6)
         if (strcmp(msg, "valid") == 0) //validare genre1
         {
-          bzero(msg, 1000);
+          bzero(msg, BUF);
           printf("Selected genre is valid \n Please enter genre 2 or leave the field blank \n");
 
           printf("%s\n Select genre2 from these genres:\n ", genreList);
           read(0, msg, sizeof(msg));
           msg[strlen(msg) - 1] = 0;
           write(sd, msg, sizeof(msg)); // scrie genre2 la server (7)
-          bzero(msg, 1000);
+          bzero(msg, BUF);
           read(sd, msg, sizeof(msg));    // citeste validare genre2 (8)
           if (strcmp(msg, "valid") == 0) //validare genre2
           {
-            bzero(msg, 1000);
+            bzero(msg, BUF);
             printf("Selected genre is valid \n Please enter genre 3 or leave the field blank \n");
 
             printf("%s\n Select genre3 from these genres:\n ", genreList);
             read(0, msg, sizeof(msg));
             msg[strlen(msg) - 1] = 0;
             write(sd, msg, sizeof(msg)); // scrie genre3 la server (9)
-            bzero(msg, 1000);
+            bzero(msg, BUF);
             read(sd, msg, sizeof(msg));    // citeste validare genre3 (10)
             if (strcmp(msg, "valid") == 0) // validare genre3
             {
@@ -196,19 +197,19 @@ int main(int argc, char *argv[])
             else // eroare la genre3
             {
               printf("Song was not added.  %s. Please try again.\n", msg);
-              bzero(msg, 1000);
+              bzero(msg, BUF);
             }
           }
           else // eroare la genre2
           {
             printf("Song was not added.  %s. Please try again.\n", msg);
-            bzero(msg, 1000);
+            bzero(msg, BUF);
           }
         }
         else // eroare la genre1
         {
           printf("Song was not added. %s. Please try again.\n", msg);
-          bzero(msg, 1000);
+          bzero(msg, BUF);
         }
       }
       else
@@ -220,17 +221,17 @@ int main(int argc, char *argv[])
       if (loginFlag == 1 && adminFlag == 1)
       {
         write(sd, msg, sizeof(msg)); // scrie addGenre la server
-        bzero(msg, 1000);
+        bzero(msg, BUF);
         printf("Enter the genre name:\n");
         read(0, msg, sizeof(msg));
         msg[strlen(msg) - 1] = 0;
         write(sd, msg, sizeof(msg)); // scrie genre_name la server (1)
-        bzero(msg, 1000);
+        bzero(msg, BUF);
         printf("Enter a genre description (optional):\n");
         read(0, msg, sizeof(msg));
         msg[strlen(msg) - 1] = 0;
         write(sd, msg, sizeof(msg)); // scrie descriere la server (2)
-        bzero(msg, 1000);
+        bzero(msg, BUF);
         printf("Genre added successfully.\n");
       }
       else
@@ -239,7 +240,7 @@ int main(int argc, char *argv[])
     else if (strcmp(msg, "exit") == 0)
     {
       write(sd, msg, sizeof(msg)); //scrie exit la server
-      bzero(msg, 1000);
+      bzero(msg, BUF);
       printf("Connection Terminated.\n");
       break;
     }
@@ -254,10 +255,10 @@ int main(int argc, char *argv[])
       if (loginFlag == 1)
       {
         write(sd, msg, sizeof(msg)); // scrie showGenres la server
-        bzero(msg, 1000);
+        bzero(msg, BUF);
         read(sd, msg, sizeof(msg));
         printf("%s--------------------------------\n", msg);
-        bzero(msg, 1000);
+        bzero(msg, BUF);
       }
       else
         printf("You must be logged in to perform this action.\n");
@@ -268,10 +269,10 @@ int main(int argc, char *argv[])
       if (loginFlag == 1)
       {
         write(sd, msg, sizeof(msg)); // scrie showSongs la server
-        bzero(msg, 1000);
+        bzero(msg, BUF);
         read(sd, msg, sizeof(msg));
         printf("\n%s---------------------------------------------------------------\n", msg);
-        bzero(msg, 1000);
+        bzero(msg, BUF);
       }
       else
         printf("You must be logged in to perform this action.\n");
@@ -282,14 +283,14 @@ int main(int argc, char *argv[])
       if (loginFlag == 1)
       {
         write(sd, msg, sizeof(msg)); // scrie vote la server
-        bzero(msg, 1000);
+        bzero(msg, BUF);
         read(sd, msg, sizeof(msg)); // citeste lista de melodii de la server (1)
         printf("%s \nEnter the ID of the song you want to vote. \n", msg);
-        bzero(msg, 1000);
+        bzero(msg, BUF);
         read(0, msg, sizeof(msg)); // citeste de la tastatura ID
         msg[strlen(msg) - 1] = 0;
         write(sd, msg, sizeof(msg)); // scrie ID la server (2)
-        bzero(msg, 1000);
+        bzero(msg, BUF);
         printf("Song was voted successfully.\n");
       }
       else
@@ -301,17 +302,17 @@ int main(int argc, char *argv[])
       if (loginFlag == 1 && adminFlag == 1)
       {
         write(sd, msg, sizeof(msg)); // scrie addDescription la server
-        bzero(msg, 1000);
+        bzero(msg, BUF);
         read(sd, msg, sizeof(msg)); // citeste lista de melodii de la server (1)
         printf("%s \nEnter the ID of the song you want to add a description for. \n", msg);
-        bzero(msg, 1000);
+        bzero(msg, BUF);
 
         read(0, msg, sizeof(msg)); // citeste de la tastatura ID
         msg[strlen(msg) - 1] = 0;
         write(sd, msg, sizeof(msg)); // scrie ID la server (2)
 
         printf("Enter the description for song with ID%s. \n", msg);
-        bzero(msg, 1000);
+        bzero(msg, BUF);
         read(0, msg, sizeof(msg)); // citeste de la tastatura descriere
         msg[strlen(msg) - 1] = 0;
         write(sd, msg, sizeof(msg)); // scrie descriere la server (3)
@@ -326,20 +327,20 @@ int main(int argc, char *argv[])
       if (loginFlag == 1)
       {
         write(sd, msg, sizeof(msg)); // scrie vote la server
-        bzero(msg, 1000);
+        bzero(msg, BUF);
         read(sd, msg, sizeof(msg)); // citeste lista de melodii de la server (1)
         printf("%s \nEnter the ID of the song you want to see the description of. \n", msg);
-        bzero(msg, 1000);
+        bzero(msg, BUF);
         read(0, msg, sizeof(msg)); // citeste de la tastatura ID
         msg[strlen(msg) - 1] = 0;
         write(sd, msg, sizeof(msg)); // scrie ID la server (2)
-        bzero(msg, 1000);
+        bzero(msg, BUF);
         read(sd, msg, sizeof(msg)); // citeste descrierea (3)
         if (strlen(msg) <= 2)
           printf("This song has no description.\n");
         else
           printf("Description:\n \n %s \n \n", msg);
-        bzero(msg, 1000);
+        bzero(msg, BUF);
       }
       else
         printf("You must be logged in to perform this action.\n");

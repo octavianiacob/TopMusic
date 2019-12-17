@@ -19,7 +19,7 @@ sqlite3 *database;
 sqlite3_stmt *statement;
 char *query = NULL;
 char *err_msg = 0;
-char str[1000];
+char str[BUF];
 int rc;
 
 void insertUser(char username[])
@@ -64,8 +64,8 @@ void insertPassword(char username[], char password[])
 
 int isValidUser(char username[])
 {
-	char isValid[1000];
-	bzero(isValid, 1000);
+	char isValid[BUF];
+	bzero(isValid, BUF);
 	isValid[0] = '1';
 	rc = sqlite3_open("topmusic.db", &database);
 	if (rc)
@@ -190,7 +190,7 @@ void insertGenre(char genre_name[], char genre_description[])
 void showGenres(char *genres)
 {
 	int genre_count = 0;
-	char genresDisplay[1000];
+	char genresDisplay[BUF];
 	rc = sqlite3_open("topmusic.db", &database);
 	if (rc)
 		printf("Error opening database. \n");
@@ -258,8 +258,9 @@ int isValidGenre(char genre[])
 void showSongs(char *songs)
 {
 	int song_count = 0;
-	char songsDisplay[1000];
-	bzero(songsDisplay, 1000);
+	int spaces;
+	char songsDisplay[10000], id[BUF], title[BUF], artist[BUF], link[BUF], votes[BUF], genre1[BUF], genre2[BUF], genre3[BUF];
+	bzero(songsDisplay, 10000);
 	rc = sqlite3_open("topmusic.db", &database);
 	if (rc)
 		printf("Error opening database. \n");
@@ -272,22 +273,64 @@ void showSongs(char *songs)
 		sqlite3_close(database);
 		printf("Can't retrieve data: %s\n", sqlite3_errmsg(database));
 	}
-	strcat(songsDisplay, " ID            Title          Artist                Link                Votes\n------------------------------------------------------------------------------\n");
+	strcat(songsDisplay, "ID    Title               Artist                Link            Votes           Genre 1        Genre 2        Genre 3\n----------------------------------------------------------------------------------------------------------------------------\n");
 	while (sqlite3_step(statement) == SQLITE_ROW)
 	{
-		strcat(songsDisplay, "  ");
-		strcat(songsDisplay, sqlite3_column_text(statement, 0));
-		strcat(songsDisplay, "          ");
-		strcat(songsDisplay, sqlite3_column_text(statement, 1));
-		strcat(songsDisplay, "          ");
-		strcat(songsDisplay, sqlite3_column_text(statement, 2));
-		strcat(songsDisplay, "          ");
-		strcat(songsDisplay, sqlite3_column_text(statement, 3));
-		strcat(songsDisplay, "          ");
-		strcat(songsDisplay, sqlite3_column_text(statement, 4));
+		strcpy(id, sqlite3_column_text(statement, 0));
+		spaces = 5 - strlen(id);
+		strcat(songsDisplay, id);
+		for (int i = 1; i <= spaces;i++)
+			strcat(songsDisplay, " ");
+
+		strcpy(title, sqlite3_column_text(statement, 1));
+		spaces = 20 - strlen(title);
+		strcat(songsDisplay, title);
+		for (int i = 1; i <= spaces;i++)
+			strcat(songsDisplay, " ");
+
+		strcpy(artist, sqlite3_column_text(statement, 2));
+		spaces = 20 - strlen(artist);
+		strcat(songsDisplay, artist);
+		for (int i = 1; i <= spaces;i++)
+			strcat(songsDisplay, " ");
+
+		strcpy(link, sqlite3_column_text(statement, 3));
+		spaces = 20 - strlen(link);
+		strcat(songsDisplay, link);
+		for (int i = 1; i <= spaces;i++)
+			strcat(songsDisplay, " ");
+
+		strcpy(votes, sqlite3_column_text(statement, 4));
+		spaces = 15 - strlen(votes);
+		strcat(songsDisplay, votes);
+		for (int i = 1; i <= spaces;i++)
+			strcat(songsDisplay, " ");
+
+		strcpy(genre1, sqlite3_column_text(statement, 5));
+		spaces = 15 - strlen(genre1);
+		strcat(songsDisplay, genre1);
+		for (int i = 1; i <= spaces;i++)
+			strcat(songsDisplay, " ");
+
+		strcpy(genre2, sqlite3_column_text(statement, 6));
+		spaces = 15 - strlen(genre2);
+		strcat(songsDisplay, genre2);
+		for (int i = 1; i <= spaces;i++)
+			strcat(songsDisplay, " ");
+
+		strcpy(genre3, sqlite3_column_text(statement, 7));
+		spaces = 15 - strlen(genre3);
+		strcat(songsDisplay, genre3);
+		for (int i = 1; i <= spaces;i++)
+			strcat(songsDisplay, " ");
+
 		strcat(songsDisplay, "\n");
+
+
 		song_count++;
 	}
+
+	strcat(songsDisplay, "----------------------------------------------------------------------------------------------------------------------------\n \n");
 	printf("Number of songs: %d\n", song_count);
 	sqlite3_finalize(statement);
 	free(query);
@@ -363,8 +406,8 @@ void addDescription(int songID, char *description)
 
 void showDescription(char *songs, int songID)
 {
-	char songsDisplay[1000];
-	bzero(songsDisplay, 1000);
+	char songsDisplay[BUF];
+	bzero(songsDisplay, BUF);
 	rc = sqlite3_open("topmusic.db", &database);
 	if (rc)
 		printf("Error opening database. \n");
@@ -392,10 +435,10 @@ int main()
 {
 	struct sockaddr_in server;
 	struct sockaddr_in from;
-	char input[1000];		 //mesajul primit de la client
-	char output[1000] = " "; //mesaj de raspuns pentru client
+	char input[BUF];		 //mesajul primit de la client
+	char output[BUF] = " "; //mesaj de raspuns pentru client
 	int sd;
-	char user_input[1000]; // copie a mesajului primit de la client
+	char user_input[BUF]; // copie a mesajului primit de la client
 
 	if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
@@ -457,7 +500,7 @@ int main()
 			while (1)
 			{
 				close(sd);
-				bzero(input, 1000);
+				bzero(input, BUF);
 				printf("Welcome to TopMusic - Server\n");
 				printf("Awaiting input from client...\n");
 				printf("LOGIN FLAG = %d , ADMIN FLAG = %d \n", loginFlag, adminFlag);
@@ -565,9 +608,9 @@ int main()
 					read(client, song_link, BUF); // citeste link de la client (3);
 					printf("link is: %s \n", song_link);
 
-					char genres[1000];
+					char genres[BUF];
 					showGenres(genres);
-					write(client, genres, 1000); // trimite la client genres (4)
+					write(client, genres, BUF); // trimite la client genres (4)
 
 					read(client, genre1, BUF); // citeste genre1 de la client (5)
 					printf("Song genre1 is: %s \n", genre1);
@@ -645,10 +688,10 @@ int main()
 
 				else if (strcmp(input, "showGenres") == 0)
 				{
-					char genres[1000];
+					char genres[BUF];
 					showGenres(genres);
 					printf("Genres: %s\n \n", genres);
-					write(client, genres, 1000); // trimite la client genres
+					write(client, genres, BUF); // trimite la client genres
 				}
 
 				// --- FUNCTIE SHOW SONGS ----
@@ -658,7 +701,7 @@ int main()
 					char songs[BUF];
 					showSongs(songs);
 					printf("Songs:\n \n %s\n \n", songs);
-					write(client, songs, 1000); // trimite la client genres
+					write(client, songs, BUF); // trimite la client genres
 				}
 
 				// --- FUNCTIE VOTE ---------
