@@ -19,9 +19,9 @@ void menu()
   if (loginFlag == 0)
     printf("Welcome to TopMusic!\n Please enter one of the following commands:\n 1) register\n 2) login\n 3) exit\n 4) commands\n");
   else if (loginFlag == 1 && adminFlag == 0)
-    printf("Welcome to TopMusic!\n You are logged in as user.\n Please enter one of the following commands:\n 1) addSong\n 2) vote\n 3) exit\n 4) commands\n 5) showGenres \n 6) showSongs \n");
+    printf("Welcome to TopMusic!\n You are logged in as user.\n Please enter one of the following commands:\n 1) addSong\n 2) vote\n 3) exit\n 4) commands\n 5) showGenres \n 6) showSongs \n 7) showDescription \n");
   else if (loginFlag == 1 && adminFlag == 1)
-    printf("Welcome to TopMusic!\n You are logged in as admin.\n Please enter one of the following commands:\n 1) addSong\n 2) addGenre\n 3) vote\n 4) exit\n 5) commands\n 6) showGenres \n 7) showSongs \n");
+    printf("Welcome to TopMusic!\n You are logged in as admin.\n Please enter one of the following commands:\n 1) addSong\n 2) addGenre\n 3) vote\n 4) exit\n 5) commands\n 6) showGenres \n 7) showSongs \n 8) addDescription \n 9) showDescription \n");
 }
 
 int main(int argc, char *argv[])
@@ -291,6 +291,55 @@ int main(int argc, char *argv[])
         write(sd, msg, sizeof(msg)); // scrie ID la server (2)
         bzero(msg, 1000);
         printf("Song was voted successfully.\n");
+      }
+      else
+        printf("You must be logged in to perform this action.\n");
+    }
+
+    else if (strcmp(msg, "addDescription") == 0)
+    {
+      if (loginFlag == 1 && adminFlag == 1)
+      {
+        write(sd, msg, sizeof(msg)); // scrie addDescription la server
+        bzero(msg, 1000);
+        read(sd, msg, sizeof(msg)); // citeste lista de melodii de la server (1)
+        printf("%s \nEnter the ID of the song you want to add a description for. \n", msg);
+        bzero(msg, 1000);
+
+        read(0, msg, sizeof(msg)); // citeste de la tastatura ID
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie ID la server (2)
+
+        printf("Enter the description for song with ID%s. \n", msg);
+        bzero(msg, 1000);
+        read(0, msg, sizeof(msg)); // citeste de la tastatura descriere
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie descriere la server (3)
+        printf("Song description added successfully.\n");
+      }
+      else
+        printf("You must be logged in as admin to perform this action.\n");
+    }
+
+    else if (strcmp(msg, "showDescription") == 0)
+    {
+      if (loginFlag == 1)
+      {
+        write(sd, msg, sizeof(msg)); // scrie vote la server
+        bzero(msg, 1000);
+        read(sd, msg, sizeof(msg)); // citeste lista de melodii de la server (1)
+        printf("%s \nEnter the ID of the song you want to see the description of. \n", msg);
+        bzero(msg, 1000);
+        read(0, msg, sizeof(msg)); // citeste de la tastatura ID
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie ID la server (2)
+        bzero(msg, 1000);
+        read(sd, msg, sizeof(msg)); // citeste descrierea (3)
+        if (strlen(msg) <= 2)
+          printf("This song has no description.\n");
+        else
+          printf("Description:\n \n %s \n \n", msg);
+        bzero(msg, 1000);
       }
       else
         printf("You must be logged in to perform this action.\n");

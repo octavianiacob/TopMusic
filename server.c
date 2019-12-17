@@ -153,7 +153,7 @@ void insertSong(char song_name[], char song_artist[], char song_link[], char gen
 		printf("Error opening database.\n");
 	else
 		printf("Database opened successfully.\n");
-	asprintf(&query, "insert into songs (song_name, song_artist, link, genre1, genre2, genre3, votes) values (\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", 0);", song_name, song_artist, song_link, genre1, genre2, genre3);
+	asprintf(&query, "insert into songs (song_name, song_artist, link, genre1, genre2, genre3, votes, song_description) values (\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", 0, \"\");", song_name, song_artist, song_link, genre1, genre2, genre3);
 	//asprintf(&query, "insert into songs (song_name, song_artist, link, genre1) values (\"%s\", \"%s\", \"%s\", \"%s\");", song_name, song_artist, song_link);
 	printf("The following SQL Query will run: '%s'\n", query);
 	sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
@@ -340,6 +340,54 @@ void voteSong(int songID)
 	free(query);
 	sqlite3_close(database);
 }
+
+void addDescription(int songID, char *description)
+{
+	rc = sqlite3_open("topmusic.db", &database);
+	if (rc)
+		printf("Error opening database. \n");
+	else
+		printf("Database opened successfully. \n");
+	asprintf(&query, "update songs set song_description = \"%s\" where id_song = \"%d\";", description, songID);
+	printf("The following SQL Query will run: '%s'\n", query);
+	sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
+	rc = sqlite3_step(statement);
+	if (rc != SQLITE_DONE)
+		printf("ERROR inserting data: %s\n", sqlite3_errmsg(database));
+	else
+		printf("Password inserted successfully.\n");
+	sqlite3_finalize(statement);
+	free(query);
+	sqlite3_close(database);
+}
+
+void showDescription(char *songs, int songID)
+{
+	char songsDisplay[1000];
+	bzero(songsDisplay, 1000);
+	rc = sqlite3_open("topmusic.db", &database);
+	if (rc)
+		printf("Error opening database. \n");
+	else
+		printf("Database opened successfully. \n");
+	asprintf(&query, "SELECT * FROM songs where id_song = %d;", songID);
+	printf("The following SQL Query will run: '%s'\n", query);
+	if (sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL) != SQLITE_OK)
+	{
+		sqlite3_close(database);
+		printf("Can't retrieve data: %s\n", sqlite3_errmsg(database));
+	}
+	if (sqlite3_step(statement) == SQLITE_ROW)
+	{
+		strcat(songsDisplay, sqlite3_column_text(statement, 8));
+		strcat(songsDisplay, "\n");
+	}
+	sqlite3_finalize(statement);
+	free(query);
+	sqlite3_close(database);
+	strcpy(songs, songsDisplay);
+}
+
 int main()
 {
 	struct sockaddr_in server;
@@ -626,6 +674,40 @@ int main()
 					songID = atoi(ID_as_string);
 					voteSong(songID);
 					printf("Song with ID = %d was successfully voted.", songID);
+				}
+
+				// --- FUNCTIE ADD DESCRIPTION ---------
+
+				else if (strcmp(input, "addDescription") == 0)
+				{
+					int songID;
+					char ID_as_string[BUF];
+					char songs[BUF];
+					char description[BUF];
+					showSongs(songs);
+					write(client, songs, BUF);		 // trimite la client lista de cantece (1)
+					read(client, ID_as_string, BUF); // citeste de la client songID (2)
+					read(client, description, BUF);  // citeste de la client descriere (3)
+					songID = atoi(ID_as_string);
+					addDescription(songID, description);
+					printf("Description \"%s\" was added to song with ID = %d.", description, songID);
+				}
+
+				// --- FUNCTIE SHOW DESCRIPTION ---------
+
+				else if (strcmp(input, "showDescription") == 0)
+				{
+					int songID;
+					char ID_as_string[BUF];
+					char songs[BUF];
+					char desc[BUF];
+					showSongs(songs);
+					write(client, songs, BUF);		 // trimite la client lista de cantece (1)
+					read(client, ID_as_string, BUF); // citeste de la client songID (2)
+					songID = atoi(ID_as_string);
+					showDescription(desc, songID);
+					write(client, desc, BUF); // trimite la client descrierea (3)
+					printf("Song with ID = %d has the description:\n %s \n.", songID, desc);
 				}
 
 				// --- CAZ EROARE -----------
