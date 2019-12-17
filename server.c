@@ -272,7 +272,7 @@ void showSongs(char *songs)
 		sqlite3_close(database);
 		printf("Can't retrieve data: %s\n", sqlite3_errmsg(database));
 	}
-	strcat(songsDisplay, " ID            Title          Artist                Link\n---------------------------------------------------------------\n");
+	strcat(songsDisplay, " ID            Title          Artist                Link                Votes\n------------------------------------------------------------------------------\n");
 	while (sqlite3_step(statement) == SQLITE_ROW)
 	{
 		strcat(songsDisplay, "  ");
@@ -283,6 +283,8 @@ void showSongs(char *songs)
 		strcat(songsDisplay, sqlite3_column_text(statement, 2));
 		strcat(songsDisplay, "          ");
 		strcat(songsDisplay, sqlite3_column_text(statement, 3));
+		strcat(songsDisplay, "          ");
+		strcat(songsDisplay, sqlite3_column_text(statement, 4));
 		strcat(songsDisplay, "\n");
 		song_count++;
 	}
