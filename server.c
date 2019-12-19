@@ -394,6 +394,280 @@ void showSongs(char *songs)
 	strcpy(songs, songsDisplay);
 }
 
+void topByVotes(char *songs)
+{
+	int song_count = 1;
+	int spaces;
+	char songsDisplay[10000], id[BUF], title[BUF], artist[BUF], link[BUF], votes[BUF], genre1[BUF], genre2[BUF], genre3[BUF];
+	bzero(songsDisplay, 10000);
+	rc = sqlite3_open("topmusic.db", &database);
+	if (rc)
+		printf("Error opening database. \n");
+	else
+		printf("Database opened successfully. \n");
+	asprintf(&query, "SELECT * FROM songs order by votes desc;");
+	printf("The following SQL Query will run: '%s'\n", query);
+	if (sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL) != SQLITE_OK)
+	{
+		sqlite3_close(database);
+		printf("Can't retrieve data: %s\n", sqlite3_errmsg(database));
+	}
+	strcat(songsDisplay, "ID    Title               Artist                Link            Votes           Genre 1        Genre 2        Genre 3\n----------------------------------------------------------------------------------------------------------------------------\n");
+	while (sqlite3_step(statement) == SQLITE_ROW)
+	{
+		strcpy(id, sqlite3_column_text(statement, 0));
+		spaces = 5 - strlen(id);
+		strcat(songsDisplay, id);
+		for (int i = 1; i <= spaces; i++)
+			strcat(songsDisplay, " ");
+
+		char temptitle[BUF];
+		strcpy(temptitle, sqlite3_column_text(statement, 1));
+		if (strlen(temptitle) <= 15)
+		{
+			strcpy(title, temptitle);
+			spaces = 20 - strlen(title);
+			strcat(songsDisplay, title);
+			for (int i = 1; i <= spaces; i++)
+				strcat(songsDisplay, " ");
+			bzero(temptitle, BUF);
+			bzero(title, BUF);
+		}
+		else
+		{
+			strncpy(title, temptitle, 13);
+			strcat(title, "...");
+			spaces = 20 - strlen(title);
+			strcat(songsDisplay, title);
+			for (int i = 1; i <= spaces; i++)
+				strcat(songsDisplay, " ");
+			bzero(temptitle, BUF);
+			bzero(title, BUF);
+		}
+
+		char tempartist[BUF];
+		strcpy(tempartist, sqlite3_column_text(statement, 2));
+		if (strlen(tempartist) <= 15)
+		{
+			strcpy(artist, tempartist);
+			spaces = 20 - strlen(artist);
+			strcat(songsDisplay, artist);
+			for (int i = 1; i <= spaces; i++)
+				strcat(songsDisplay, " ");
+			bzero(tempartist, BUF);
+			bzero(artist, BUF);
+		}
+		else
+		{
+			strncpy(artist, tempartist, 13);
+			strcat(artist, "...");
+			spaces = 20 - strlen(artist);
+			strcat(songsDisplay, artist);
+			for (int i = 1; i <= spaces; i++)
+				strcat(songsDisplay, " ");
+			bzero(tempartist, BUF);
+			bzero(artist, BUF);
+		}
+
+		char templink[BUF];
+		strcpy(templink, sqlite3_column_text(statement, 3));
+		if (strlen(templink) <= 15)
+		{
+			strcpy(link, templink);
+			spaces = 20 - strlen(link);
+			strcat(songsDisplay, link);
+			for (int i = 1; i <= spaces; i++)
+				strcat(songsDisplay, " ");
+			bzero(templink, BUF);
+			bzero(link, BUF);
+		}
+		else
+		{
+			strncpy(link, templink, 13);
+			strcat(link, "...");
+			spaces = 20 - strlen(link);
+			strcat(songsDisplay, link);
+			for (int i = 1; i <= spaces; i++)
+				strcat(songsDisplay, " ");
+			bzero(templink, BUF);
+			bzero(link, BUF);
+		}
+
+		strcpy(votes, sqlite3_column_text(statement, 4));
+		spaces = 15 - strlen(votes);
+		strcat(songsDisplay, votes);
+		for (int i = 1; i <= spaces; i++)
+			strcat(songsDisplay, " ");
+
+		strcpy(genre1, sqlite3_column_text(statement, 5));
+		spaces = 15 - strlen(genre1);
+		strcat(songsDisplay, genre1);
+		for (int i = 1; i <= spaces; i++)
+			strcat(songsDisplay, " ");
+
+		strcpy(genre2, sqlite3_column_text(statement, 6));
+		spaces = 15 - strlen(genre2);
+		strcat(songsDisplay, genre2);
+		for (int i = 1; i <= spaces; i++)
+			strcat(songsDisplay, " ");
+
+		strcpy(genre3, sqlite3_column_text(statement, 7));
+		spaces = 15 - strlen(genre3);
+		strcat(songsDisplay, genre3);
+		for (int i = 1; i <= spaces; i++)
+			strcat(songsDisplay, " ");
+
+		strcat(songsDisplay, "\n");
+
+		song_count++;
+	}
+
+	strcat(songsDisplay, "----------------------------------------------------------------------------------------------------------------------------\n \n");
+	printf("Number of songs: %d\n", song_count);
+	sqlite3_finalize(statement);
+	free(query);
+	sqlite3_close(database);
+	//printf("Variabila songsDisplay are:\n %s\n", songsDisplay);
+	strcpy(songs, songsDisplay);
+}
+
+void topByGenre(char *songs, char *genre)
+{
+	int song_count = 1;
+	int spaces;
+	char songsDisplay[10000], id[BUF], title[BUF], artist[BUF], link[BUF], votes[BUF], genre1[BUF], genre2[BUF], genre3[BUF];
+	bzero(songsDisplay, 10000);
+	rc = sqlite3_open("topmusic.db", &database);
+	if (rc)
+		printf("Error opening database. \n");
+	else
+		printf("Database opened successfully. \n");
+	asprintf(&query, "select * from songs where genre1 = \"%s\" or genre2 = \"%s\" or genre3 = \"%s\";", genre, genre, genre);
+	printf("The following SQL Query will run: '%s'\n", query);
+	if (sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL) != SQLITE_OK)
+	{
+		sqlite3_close(database);
+		printf("Can't retrieve data: %s\n", sqlite3_errmsg(database));
+	}
+	strcat(songsDisplay, "ID    Title               Artist                Link            Votes           Genre 1        Genre 2        Genre 3\n----------------------------------------------------------------------------------------------------------------------------\n");
+	while (sqlite3_step(statement) == SQLITE_ROW)
+	{
+		strcpy(id, sqlite3_column_text(statement, 0));
+		spaces = 5 - strlen(id);
+		strcat(songsDisplay, id);
+		for (int i = 1; i <= spaces; i++)
+			strcat(songsDisplay, " ");
+
+		char temptitle[BUF];
+		strcpy(temptitle, sqlite3_column_text(statement, 1));
+		if (strlen(temptitle) <= 15)
+		{
+			strcpy(title, temptitle);
+			spaces = 20 - strlen(title);
+			strcat(songsDisplay, title);
+			for (int i = 1; i <= spaces; i++)
+				strcat(songsDisplay, " ");
+			bzero(temptitle, BUF);
+			bzero(title, BUF);
+		}
+		else
+		{
+			strncpy(title, temptitle, 13);
+			strcat(title, "...");
+			spaces = 20 - strlen(title);
+			strcat(songsDisplay, title);
+			for (int i = 1; i <= spaces; i++)
+				strcat(songsDisplay, " ");
+			bzero(temptitle, BUF);
+			bzero(title, BUF);
+		}
+
+		char tempartist[BUF];
+		strcpy(tempartist, sqlite3_column_text(statement, 2));
+		if (strlen(tempartist) <= 15)
+		{
+			strcpy(artist, tempartist);
+			spaces = 20 - strlen(artist);
+			strcat(songsDisplay, artist);
+			for (int i = 1; i <= spaces; i++)
+				strcat(songsDisplay, " ");
+			bzero(tempartist, BUF);
+			bzero(artist, BUF);
+		}
+		else
+		{
+			strncpy(artist, tempartist, 13);
+			strcat(artist, "...");
+			spaces = 20 - strlen(artist);
+			strcat(songsDisplay, artist);
+			for (int i = 1; i <= spaces; i++)
+				strcat(songsDisplay, " ");
+			bzero(tempartist, BUF);
+			bzero(artist, BUF);
+		}
+
+		char templink[BUF];
+		strcpy(templink, sqlite3_column_text(statement, 3));
+		if (strlen(templink) <= 15)
+		{
+			strcpy(link, templink);
+			spaces = 20 - strlen(link);
+			strcat(songsDisplay, link);
+			for (int i = 1; i <= spaces; i++)
+				strcat(songsDisplay, " ");
+			bzero(templink, BUF);
+			bzero(link, BUF);
+		}
+		else
+		{
+			strncpy(link, templink, 13);
+			strcat(link, "...");
+			spaces = 20 - strlen(link);
+			strcat(songsDisplay, link);
+			for (int i = 1; i <= spaces; i++)
+				strcat(songsDisplay, " ");
+			bzero(templink, BUF);
+			bzero(link, BUF);
+		}
+
+		strcpy(votes, sqlite3_column_text(statement, 4));
+		spaces = 15 - strlen(votes);
+		strcat(songsDisplay, votes);
+		for (int i = 1; i <= spaces; i++)
+			strcat(songsDisplay, " ");
+
+		strcpy(genre1, sqlite3_column_text(statement, 5));
+		spaces = 15 - strlen(genre1);
+		strcat(songsDisplay, genre1);
+		for (int i = 1; i <= spaces; i++)
+			strcat(songsDisplay, " ");
+
+		strcpy(genre2, sqlite3_column_text(statement, 6));
+		spaces = 15 - strlen(genre2);
+		strcat(songsDisplay, genre2);
+		for (int i = 1; i <= spaces; i++)
+			strcat(songsDisplay, " ");
+
+		strcpy(genre3, sqlite3_column_text(statement, 7));
+		spaces = 15 - strlen(genre3);
+		strcat(songsDisplay, genre3);
+		for (int i = 1; i <= spaces; i++)
+			strcat(songsDisplay, " ");
+
+		strcat(songsDisplay, "\n");
+
+		song_count++;
+	}
+
+	strcat(songsDisplay, "----------------------------------------------------------------------------------------------------------------------------\n \n");
+	printf("Number of songs: %d\n", song_count);
+	sqlite3_finalize(statement);
+	free(query);
+	sqlite3_close(database);
+	//printf("Variabila songsDisplay are:\n %s\n", songsDisplay);
+	strcpy(songs, songsDisplay);
+}
+
 void voteSong(int songID)
 {
 	int votes = -1;
@@ -925,6 +1199,30 @@ int main()
 					showSongs(songs);
 					printf("Songs:\n \n %s\n \n", songs);
 					write(client, songs, BUF); // trimite la client genres
+				}
+
+				// --- FUNCTIE TOP BY VOTES ----
+
+				else if (strcmp(input, "topByVotes") == 0)
+				{
+					char songs[BUF];
+					topByVotes(songs);
+					printf("Songs:\n \n %s\n \n", songs);
+					write(client, songs, BUF); // trimite la client genres
+				}
+
+				// --- FUNCTIE TOP BY Genre ----
+
+				else if (strcmp(input, "topByGenre") == 0)
+				{
+					char songs[BUF];
+					char selectedGenre[BUF];
+					char genres[BUF];
+					showGenres(genres);
+					write(client, genres, BUF); // trimite la client genres (1)
+					read(client, selectedGenre, BUF); // citeste de la client genul ales (2)
+					topByGenre(songs, selectedGenre);
+					write(client, songs, BUF); // trimite la client genres (3)
 				}
 
 				// --- FUNCTIE VOTE ---------
