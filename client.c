@@ -12,6 +12,7 @@ extern int errno;
 int port;
 int loginFlag = 0;
 int adminFlag = 0;
+int voteFlag = 0;
 #define BUF 10000
 
 void menu()
@@ -22,7 +23,7 @@ void menu()
   else if (loginFlag == 1 && adminFlag == 0)
     printf("Welcome to TopMusic!\n You are logged in as user.\n Please enter one of the following commands:\n 1) addSong\n 2) vote\n 3) exit\n 4) commands\n 5) showGenres \n 6) showSongs \n 7) showDescription \n 8) openLink \n");
   else if (loginFlag == 1 && adminFlag == 1)
-    printf("Welcome to TopMusic!\n You are logged in as admin.\n Please enter one of the following commands:\n 1) addSong\n 2) addGenre\n 3) vote\n 4) exit\n 5) commands\n 6) showGenres \n 7) showSongs \n 8) addDescription \n 9) showDescription \n 10) openLink \n 11) deleteSong \n");
+    printf("Welcome to TopMusic!\n You are logged in as admin.\n Please enter one of the following commands:\n 1) addSong\n 2) addGenre\n 3) vote\n 4) exit\n 5) commands\n 6) showGenres \n 7) showSongs \n 8) addDescription \n 9) showDescription \n 10) openLink \n 11) deleteSong \n 12) deleteGenre \n");
 }
 
 int main(int argc, char *argv[])
@@ -257,7 +258,7 @@ int main(int argc, char *argv[])
         write(sd, msg, sizeof(msg)); // scrie showGenres la server
         bzero(msg, BUF);
         read(sd, msg, sizeof(msg));
-        printf("%s--------------------------------\n", msg);
+        printf("%s \n", msg);
         bzero(msg, BUF);
       }
       else
@@ -284,14 +285,21 @@ int main(int argc, char *argv[])
       {
         write(sd, msg, sizeof(msg)); // scrie vote la server
         bzero(msg, BUF);
-        read(sd, msg, sizeof(msg)); // citeste lista de melodii de la server (1)
-        printf("%s \nEnter the ID of the song you want to vote. \n", msg);
-        bzero(msg, BUF);
-        read(0, msg, sizeof(msg)); // citeste de la tastatura ID
-        msg[strlen(msg) - 1] = 0;
-        write(sd, msg, sizeof(msg)); // scrie ID la server (2)
-        bzero(msg, BUF);
-        printf("Song was voted successfully.\n");
+        read(sd, msg, sizeof(msg)); // citeste validare drept de vot (1)
+        voteFlag = atoi(msg);
+        if (voteFlag == 1 || adminFlag == 1)
+        {
+          read(sd, msg, sizeof(msg)); // citeste lista de melodii de la server (2)
+          printf("%s \nEnter the ID of the song you want to vote. \n", msg);
+          bzero(msg, BUF);
+          read(0, msg, sizeof(msg)); // citeste de la tastatura ID
+          msg[strlen(msg) - 1] = 0;
+          write(sd, msg, sizeof(msg)); // scrie ID la server (3)
+          bzero(msg, BUF);
+          printf("Song was voted successfully.\n");
+        }
+        else
+          printf("You don't have permission to vote\n");
       }
       else
         printf("You must be logged in to perform this action.\n");
@@ -388,6 +396,48 @@ int main(int argc, char *argv[])
         msg[strlen(msg) - 1] = 0;
         write(sd, msg, sizeof(msg)); // scrie ID la server (2)
         printf("Song deleted successfully.\n");
+      }
+      else
+        printf("You must be logged in as admin to perform this action.\n");
+    }
+
+    else if (strcmp(msg, "deleteGenre") == 0)
+    {
+      if (loginFlag == 1 && adminFlag == 1)
+      {
+        write(sd, msg, sizeof(msg)); // scrie deleteGenre la server
+        bzero(msg, BUF);
+        read(sd, msg, sizeof(msg)); // citeste lista de melodii de la server (1)
+        printf("%s \nEnter the ID of the genre you want to delete. \n", msg);
+        bzero(msg, BUF);
+        read(0, msg, sizeof(msg)); // citeste de la tastatura ID
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie ID la server (2)
+        printf("Genre deleted successfully.\n");
+      }
+      else
+        printf("You must be logged in as admin to perform this action.\n");
+    }
+
+    else if (strcmp(msg, "setVoteRight") == 0)
+    {
+      if (loginFlag == 1 && adminFlag == 1)
+      {
+        write(sd, msg, sizeof(msg)); // scrie setVoteRight la server
+        bzero(msg, BUF);
+        printf("Enter the userID:\n");
+        read(0, msg, sizeof(msg));
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie userID la server (1)
+        bzero(msg, BUF);
+        printf("To allow the user to vote, write 1.\n To deny the right to vote, write 0.\n");
+        read(0, msg, sizeof(msg));
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie 1 sau 0 la server (1)
+        if (strcmp(msg, "1") == 0)
+          printf("User can vote.\n");
+        else
+          printf("User cannot vote.\n");
       }
       else
         printf("You must be logged in as admin to perform this action.\n");
