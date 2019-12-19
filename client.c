@@ -22,7 +22,7 @@ void menu()
   else if (loginFlag == 1 && adminFlag == 0)
     printf("Welcome to TopMusic!\n You are logged in as user.\n Please enter one of the following commands:\n 1) addSong\n 2) vote\n 3) exit\n 4) commands\n 5) showGenres \n 6) showSongs \n 7) showDescription \n 8) openLink \n");
   else if (loginFlag == 1 && adminFlag == 1)
-    printf("Welcome to TopMusic!\n You are logged in as admin.\n Please enter one of the following commands:\n 1) addSong\n 2) addGenre\n 3) vote\n 4) exit\n 5) commands\n 6) showGenres \n 7) showSongs \n 8) addDescription \n 9) showDescription \n 10) openLink \nÎ");
+    printf("Welcome to TopMusic!\n You are logged in as admin.\n Please enter one of the following commands:\n 1) addSong\n 2) addGenre\n 3) vote\n 4) exit\n 5) commands\n 6) showGenres \n 7) showSongs \n 8) addDescription \n 9) showDescription \n 10) openLink \n 11) deleteSong \n");
 }
 
 int main(int argc, char *argv[])
@@ -367,12 +367,30 @@ int main(int argc, char *argv[])
           char linkcommand[BUF];
           snprintf(linkcommand, sizeof(linkcommand), "python -mwebbrowser %s", msg);
           system(linkcommand);
-          // printf("URL:\n \n %s \n \n", linkcommand);
+          printf("URL Opened: %s \n", msg);
         }
         bzero(msg, BUF);
       }
       else
         printf("You must be logged in to perform this action.\n");
+    }
+
+    else if (strcmp(msg, "deleteSong") == 0)
+    {
+      if (loginFlag == 1 && adminFlag == 1)
+      {
+        write(sd, msg, sizeof(msg)); // scrie deleteSong la server
+        bzero(msg, BUF);
+        read(sd, msg, sizeof(msg)); // citeste lista de melodii de la server (1)
+        printf("%s \nEnter the ID of the song you want to delete. \n", msg);
+        bzero(msg, BUF);
+        read(0, msg, sizeof(msg)); // citeste de la tastatura ID
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie ID la server (2)
+        printf("Song deleted successfully.\n");
+      }
+      else
+        printf("You must be logged in as admin to perform this action.\n");
     }
 
     else
