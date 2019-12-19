@@ -430,6 +430,28 @@ void showDescription(char *songs, int songID)
 	strcpy(songs, songsDisplay);
 }
 
+void getSongURL(int songID, char *URL)
+{
+	char vv[BUF];
+	bzero(vv, BUF);
+	vv[0] = '0';
+	rc = sqlite3_open("topmusic.db", &database);
+	if (rc)
+		printf("Error opening database. \n");
+	else
+		printf("Database opened successfully. \n");
+	asprintf(&query, "SELECT * FROM songs WHERE id_song = \"%d\";", songID);
+	printf("The following SQL Query will run: '%s'\n", query);
+	rc = sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
+	rc = sqlite3_step(statement);
+	if (rc == SQLITE_ROW)
+		sprintf(vv, sqlite3_column_text(statement, 3));
+	sqlite3_finalize(statement);
+	free(query);
+	sqlite3_close(database);
+	strcpy(URL, vv);
+}
+
 int main()
 {
 	struct sockaddr_in server;
@@ -750,6 +772,22 @@ int main()
 					showDescription(desc, songID);
 					write(client, desc, BUF); // trimite la client descrierea (3)
 					printf("Song with ID = %d has the description:\n %s \n.", songID, desc);
+				}
+
+				// --- FUNCTIE DESCHIDERE LINK
+
+				else if (strcmp(input, "openLink") == 0)
+				{
+					char URL[BUF];
+					int songID;
+					char ID_as_string[BUF];
+					char songs[BUF];
+					showSongs(songs);
+					write(client, songs, BUF);		 // trimite la client lista de cantece (1)
+					read(client, ID_as_string, BUF); // citeste de la client songID (2)
+					songID = atoi(ID_as_string);
+					getSongURL(songID, URL);
+					write(client, URL, BUF); // trimite la client URL (3)
 				}
 
 				// --- CAZ EROARE -----------
