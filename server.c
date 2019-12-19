@@ -9,11 +9,11 @@
 #include <sqlite3.h>
 
 #define PORT 2024
-#define BUF 1000
+#define BUF 10000
 
 extern int errno;
 
-char username[100], password[100];
+char username[BUF], password[BUF];
 int loginFlag, adminFlag;
 sqlite3 *database;
 sqlite3_stmt *statement;
@@ -279,53 +279,52 @@ void showSongs(char *songs)
 		strcpy(id, sqlite3_column_text(statement, 0));
 		spaces = 5 - strlen(id);
 		strcat(songsDisplay, id);
-		for (int i = 1; i <= spaces;i++)
+		for (int i = 1; i <= spaces; i++)
 			strcat(songsDisplay, " ");
 
 		strcpy(title, sqlite3_column_text(statement, 1));
 		spaces = 20 - strlen(title);
 		strcat(songsDisplay, title);
-		for (int i = 1; i <= spaces;i++)
+		for (int i = 1; i <= spaces; i++)
 			strcat(songsDisplay, " ");
 
 		strcpy(artist, sqlite3_column_text(statement, 2));
 		spaces = 20 - strlen(artist);
 		strcat(songsDisplay, artist);
-		for (int i = 1; i <= spaces;i++)
+		for (int i = 1; i <= spaces; i++)
 			strcat(songsDisplay, " ");
 
 		strcpy(link, sqlite3_column_text(statement, 3));
 		spaces = 20 - strlen(link);
 		strcat(songsDisplay, link);
-		for (int i = 1; i <= spaces;i++)
+		for (int i = 1; i <= spaces; i++)
 			strcat(songsDisplay, " ");
 
 		strcpy(votes, sqlite3_column_text(statement, 4));
 		spaces = 15 - strlen(votes);
 		strcat(songsDisplay, votes);
-		for (int i = 1; i <= spaces;i++)
+		for (int i = 1; i <= spaces; i++)
 			strcat(songsDisplay, " ");
 
 		strcpy(genre1, sqlite3_column_text(statement, 5));
 		spaces = 15 - strlen(genre1);
 		strcat(songsDisplay, genre1);
-		for (int i = 1; i <= spaces;i++)
+		for (int i = 1; i <= spaces; i++)
 			strcat(songsDisplay, " ");
 
 		strcpy(genre2, sqlite3_column_text(statement, 6));
 		spaces = 15 - strlen(genre2);
 		strcat(songsDisplay, genre2);
-		for (int i = 1; i <= spaces;i++)
+		for (int i = 1; i <= spaces; i++)
 			strcat(songsDisplay, " ");
 
 		strcpy(genre3, sqlite3_column_text(statement, 7));
 		spaces = 15 - strlen(genre3);
 		strcat(songsDisplay, genre3);
-		for (int i = 1; i <= spaces;i++)
+		for (int i = 1; i <= spaces; i++)
 			strcat(songsDisplay, " ");
 
 		strcat(songsDisplay, "\n");
-
 
 		song_count++;
 	}
@@ -435,7 +434,7 @@ int main()
 {
 	struct sockaddr_in server;
 	struct sockaddr_in from;
-	char input[BUF];		 //mesajul primit de la client
+	char input[BUF];		//mesajul primit de la client
 	char output[BUF] = " "; //mesaj de raspuns pentru client
 	int sd;
 	char user_input[BUF]; // copie a mesajului primit de la client
@@ -529,8 +528,8 @@ int main()
 
 				else if (strcmp(input, "register") == 0)
 				{
-					bzero(username, 100);
-					bzero(password, 100);
+					bzero(username, BUF);
+					bzero(password, BUF);
 					read(client, username, BUF); // citeste username de la client (1)
 					printf("Username is: %s \n", username);
 
@@ -559,8 +558,8 @@ int main()
 
 				else if (strcmp(input, "login") == 0)
 				{
-					bzero(username, 100);
-					bzero(password, 100);
+					bzero(username, BUF);
+					bzero(password, BUF);
 					read(client, username, BUF); // citeste username de la client (1)
 					printf("Username is: %s \n", username);
 					read(client, password, BUF); // citeste parola de la client (2)

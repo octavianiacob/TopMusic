@@ -12,7 +12,7 @@ extern int errno;
 int port;
 int loginFlag = 0;
 int adminFlag = 0;
-#define BUF 1000
+#define BUF 10000
 
 void menu()
 {
@@ -271,7 +271,7 @@ int main(int argc, char *argv[])
         write(sd, msg, sizeof(msg)); // scrie showSongs la server
         bzero(msg, BUF);
         read(sd, msg, sizeof(msg));
-        printf("\n%s---------------------------------------------------------------\n", msg);
+        printf("\n%s\n", msg);
         bzero(msg, BUF);
       }
       else
