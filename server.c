@@ -917,6 +917,59 @@ int getAdminID(char username[])
 	return atoi(vv);
 }
 
+void showUsers(char *users)
+{
+	int user_count = 0;
+	char usersDisplay[BUF], id[BUF], username[BUF], vr[BUF];
+	int spaces;
+	bzero(usersDisplay, BUF);
+	rc = sqlite3_open("topmusic.db", &database);
+	if (rc)
+		printf("Error opening database. \n");
+	else
+		printf("Database opened successfully. \n");
+	asprintf(&query, "SELECT * FROM user;");
+	printf("The following SQL Query will run: '%s'\n", query);
+	if (sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL) != SQLITE_OK)
+	{
+		sqlite3_close(database);
+		printf("Can't retrieve data: %s\n", sqlite3_errmsg(database));
+	}
+	strcat(usersDisplay, "\n  ID   Username        Can Vote\n-----------------------------------\n");
+	while (sqlite3_step(statement) == SQLITE_ROW)
+	{
+		strcat(usersDisplay, "  ");
+
+		strcpy(id, sqlite3_column_text(statement, 0));
+		spaces = 5 - strlen(id);
+		strcat(usersDisplay, id);
+		for (int i = 1; i <= spaces; i++)
+			strcat(usersDisplay, " ");
+
+		strcpy(username, sqlite3_column_text(statement, 1));
+		spaces = 20 - strlen(username);
+		strcat(usersDisplay, username);
+		for (int i = 1; i <= spaces; i++)
+			strcat(usersDisplay, " ");
+
+		strcpy(vr, sqlite3_column_text(statement, 7));
+		spaces = 20 - strlen(vr);
+		strcat(usersDisplay, vr);
+		for (int i = 1; i <= spaces; i++)
+			strcat(usersDisplay, " ");
+
+		strcat(usersDisplay, "\n");
+		user_count++;
+	}
+	printf("Number of genres: %d\n", user_count);
+	sqlite3_finalize(statement);
+	free(query);
+	sqlite3_close(database);
+	//printf("Variabila usersDisplay are:\n %s\n", usersDisplay);
+	strcat(usersDisplay, "-----------------------------------\n");
+	strcpy(users, usersDisplay);
+}
+
 int main()
 {
 	struct sockaddr_in server;
@@ -995,6 +1048,10 @@ int main()
 						voteFlag = getVoteRight(ID);
 					}
 				}
+				
+				char u[BUF];
+				showUsers(u);
+				printf("Users: %s \n", u);
 
 				close(sd);
 				bzero(input, BUF);
@@ -1331,11 +1388,25 @@ int main()
 					int userID, canVote;
 					char canVote_as_string[BUF];
 					char ID_as_string[BUF];
-					read(client, ID_as_string, BUF); // citeste id user de la client (1)
+					char users[BUF];
+					showUsers(users);
+					printf("Users: %s\n \n", users);
+					write(client, users, BUF); // trimite la client users (1)
+					read(client, ID_as_string, BUF); // citeste id user de la client (2)
 					userID = atoi(ID_as_string);
-					read(client, canVote_as_string, BUF); // citeste 1 sau 0 pt voterights (2)
+					read(client, canVote_as_string, BUF); // citeste 1 sau 0 pt voterights (3)
 					canVote = atoi(canVote_as_string);
 					setVoteRight(userID, canVote);
+				}
+
+				// --- FUNCTIE SHOW USERS
+
+				else if (strcmp(input, "showUsers") == 0)
+				{
+					char users[BUF];
+					showUsers(users);
+					printf("Users: %s\n \n", users);
+					write(client, users, BUF); // trimite la client users
 				}
 
 				// --- CAZ EROARE -----------
