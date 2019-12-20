@@ -496,6 +496,31 @@ int main(int argc, char *argv[])
         printf("You must be logged in to perform this action.\n");
     }
 
+    else if (strcmp(msg, "writeComment") == 0)
+    {
+      if(loginFlag == 1)
+      {
+        write(sd, msg, sizeof(msg)); // scrie comment la server
+        bzero(msg, BUF);
+        read(sd, msg, sizeof(msg)); // citeste lista de melodii de la server (1)
+        printf("%s \n", msg);
+        bzero(msg, BUF);
+        printf("Select a Song ID to comment on:\n");
+        read(0, msg, sizeof(msg));
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie SongID la server (2)
+        bzero(msg, BUF);
+        printf("Your Comment:\n");
+        read(0, msg, sizeof(msg));
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie comment la server (3)
+        bzero(msg, BUF);
+        printf("\n Comment added successfully.\n");
+      }
+      else
+        printf("You must be logged in to perform this action.\n");
+    }
+
     else
       printf("Unknown command. Type \"commands\" to list all the available commands.\n");
   }

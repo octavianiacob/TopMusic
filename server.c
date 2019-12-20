@@ -970,6 +970,26 @@ void showUsers(char *users)
 	strcpy(users, usersDisplay);
 }
 
+void writeComment(int songID, int userID, char *comment)
+{
+	rc = sqlite3_open("topmusic.db", &database);
+	if (rc)
+		printf("Error opening database. \n");
+	else
+		printf("Database opened successfully. \n");
+	asprintf(&query, "insert into comments (song_id, user_id, comment) values (%d, %d, \"%s\");", songID, userID, comment);
+	printf("The following SQL Query will run: '%s'\n", query);
+	sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
+	rc = sqlite3_step(statement);
+	if (rc != SQLITE_DONE)
+		printf("ERROR inserting data: %s\n", sqlite3_errmsg(database));
+	else
+		printf("Username inserted successfully.\n");
+	sqlite3_finalize(statement);
+	free(query);
+	sqlite3_close(database);
+}
+
 int main()
 {
 	struct sockaddr_in server;
@@ -1407,6 +1427,33 @@ int main()
 					showUsers(users);
 					printf("Users: %s\n \n", users);
 					write(client, users, BUF); // trimite la client users
+				}
+
+				// --- FUNCTIE WRITE COMMENT
+
+				else if (strcmp(input, "writeComment") == 0)
+				{
+					char songs[BUF], ID_as_string[BUF], comment[BUF], commentWithUsername[BUF];
+					int songID;
+					int userID;
+					sprintf(commentWithUsername, "%s: ", username);
+					userID = getUserID(username);
+					if(userID == 0)
+					{
+						userID = getAdminID(username);
+						sprintf(commentWithUsername, "[ADMIN]%s: ", username);
+
+					}
+					showSongs(songs);
+					printf("USERID = %d \n", userID);
+					write(client, songs, BUF); // trimite lista melodii (1)
+					read(client, ID_as_string, BUF); // citeste songID de la client (2)
+					songID = atoi(ID_as_string);
+					printf("SONGID = %d \n", songID);
+					read(client, comment, BUF); // citeste comment de la client (3)
+					printf("COMMENT = %s \n", comment);
+					strcat(commentWithUsername, comment);
+					writeComment(songID, userID, commentWithUsername);
 				}
 
 				// --- CAZ EROARE -----------
