@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <sqlite3.h>
 
-#define PORT 2025
+#define PORT 2024
 #define BUF 10000
 
 extern int errno;
@@ -1107,12 +1107,19 @@ int main()
 	char input[BUF];		//mesajul primit de la client
 	char output[BUF] = " "; //mesaj de raspuns pentru client
 	int sd;
+	int opt = 1;
 	char user_input[BUF]; // copie a mesajului primit de la client
 
 	if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
 		perror("Error on socket().\n");
 		return errno;
+	}
+
+	if (setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)))
+	{
+		perror("setsockopt");
+		exit(EXIT_FAILURE);
 	}
 
 	bzero(&server, sizeof(server));
@@ -1178,10 +1185,6 @@ int main()
 						voteFlag = getVoteRight(ID);
 					}
 				}
-
-				char u[BUF];
-				showUsers(u);
-				printf("Users: %s \n", u);
 
 				close(sd);
 				bzero(input, BUF);
