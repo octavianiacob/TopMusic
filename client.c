@@ -15,15 +15,19 @@ int adminFlag = 0;
 int voteFlag = 0;
 #define BUF 10000
 
-void menu()
+void menu(int nl)
 {
+  if (nl == 1)
+  {
+    printf("\n \n \n");
+  }
   // Welcome Message
   if (loginFlag == 0)
-    printf("Welcome to TopMusic!\n Please enter one of the following commands:\n 1) register\n 2) login\n 3) exit\n 4) commands\n");
+    printf(" Welcome to TopMusic!\n Please enter one of the following commands:\n \n 1) register\n 2) login\n 3) commands\n 4) exit \n \n");
   else if (loginFlag == 1 && adminFlag == 0)
-    printf("Welcome to TopMusic!\n You are logged in as user.\n Please enter one of the following commands:\n 1) addSong\n 2) vote\n 3) exit\n 4) commands\n 5) showGenres \n 6) showSongs \n 7) showDescription \n 8) openLink \n 9) topByVotes \n 10) topByGenre \n");
+    printf(" Welcome to TopMusic!\n You are logged in as user.\n Please enter one of the following commands:\n \n 1) addSong              7) topByVotes \n 2) showSongs            8) topByGenre \n 3) showGenres           9) writeComment \n 4) showDescription     10) showComments \n 5) vote                11) commands \n 6) openLink            12) exit \n \n");
   else if (loginFlag == 1 && adminFlag == 1)
-    printf("Welcome to TopMusic!\n You are logged in as admin.\n Please enter one of the following commands:\n 1) addSong\n 2) addGenre\n 3) vote\n 4) exit\n 5) commands\n 6) showGenres \n 7) showSongs \n 8) addDescription \n 9) showDescription \n 10) openLink \n 11) deleteSong \n 12) deleteGenre \n 13) setVoteRight \n 14) topByVotes \n 15) topByGenre \n 16) showUsers \n");
+    printf(" Welcome to TopMusic!\n You are logged in as admin.\n Please enter one of the following commands:\n \n 1) addSong               11) writeComment \n 2) showSongs             12) showComments \n 3) deleteSong            13) deleteComment \n 4) addGenre              14) topByGenre \n 5) showGenres            15) topByVotes \n 6) deleteGenre           16) showUsers \n 7) addDescription        17) setVoteRight \n 8) showDescription       18) vote \n 9) deleteDescription     19) commands \n10) openLink              20) exit \n \n");
 }
 
 int main(int argc, char *argv[])
@@ -54,7 +58,8 @@ int main(int argc, char *argv[])
     return errno;
   }
 
-  menu();
+  system("clear");
+  menu(0);
   while (1)
   {
 
@@ -84,6 +89,8 @@ int main(int argc, char *argv[])
           write(sd, msg, sizeof(msg)); // scrie la server parola (3)
           bzero(msg, BUF);
           printf("Registration successful.\n");
+          sleep(3);
+          menu(1);
         }
         else
         {
@@ -117,25 +124,38 @@ int main(int argc, char *argv[])
           printf("Login as admin successful.\n\n");
           adminFlag = 1;
           loginFlag = 1;
-          menu();
+          menu(1);
         }
         else if (strcmp(msg, "user") == 0)
         {
           printf("Login as user successful.\n\n");
           adminFlag = 0;
           loginFlag = 1;
-          menu();
+          menu(1);
         }
         else
         {
           printf("Login failed. Please try again.\n");
           adminFlag = 0;
           loginFlag = 0;
-          menu();
+          menu(1);
         }
       }
       else
         printf("You are already logged in. You must be signed out to perform this action.\n");
+    }
+
+    else if (strcmp(msg, "commands") == 0)
+    {
+      menu(0);
+    }
+
+    else if (strcmp(msg, "exit") == 0)
+    {
+      write(sd, msg, sizeof(msg)); //scrie exit la server
+      bzero(msg, BUF);
+      printf("Connection Terminated.\n");
+      break;
     }
 
     else if (strcmp(msg, "addSong") == 0)
@@ -194,6 +214,8 @@ int main(int argc, char *argv[])
             if (strcmp(msg, "valid") == 0) // validare genre3
             {
               printf("Song added successfully.\n");
+              sleep(3);
+              menu(1);
             }
             else // eroare la genre3
             {
@@ -217,6 +239,42 @@ int main(int argc, char *argv[])
         printf("You must be logged in to perform this action.\n");
     }
 
+    else if (strcmp(msg, "showSongs") == 0)
+    {
+      if (loginFlag == 1)
+      {
+        write(sd, msg, sizeof(msg)); // scrie showSongs la server
+        bzero(msg, BUF);
+        read(sd, msg, sizeof(msg));
+        printf("\n%s\n", msg);
+        bzero(msg, BUF);
+        sleep(3);
+        menu(0);
+      }
+      else
+        printf("You must be logged in to perform this action.\n");
+    }
+
+    else if (strcmp(msg, "deleteSong") == 0)
+    {
+      if (loginFlag == 1 && adminFlag == 1)
+      {
+        write(sd, msg, sizeof(msg)); // scrie deleteSong la server
+        bzero(msg, BUF);
+        read(sd, msg, sizeof(msg)); // citeste lista de melodii de la server (1)
+        printf("%s \nEnter the ID of the song you want to delete. \n", msg);
+        bzero(msg, BUF);
+        read(0, msg, sizeof(msg)); // citeste de la tastatura ID
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie ID la server (2)
+        printf("Song deleted successfully.\n");
+        sleep(3);
+        menu(1);
+      }
+      else
+        printf("You must be logged in as admin to perform this action.\n");
+    }
+
     else if (strcmp(msg, "addGenre") == 0)
     {
       if (loginFlag == 1 && adminFlag == 1)
@@ -234,21 +292,11 @@ int main(int argc, char *argv[])
         write(sd, msg, sizeof(msg)); // scrie descriere la server (2)
         bzero(msg, BUF);
         printf("Genre added successfully.\n");
+        sleep(3);
+        menu(1);
       }
       else
         printf("You must be logged in as admin to perform this action.\n");
-    }
-    else if (strcmp(msg, "exit") == 0)
-    {
-      write(sd, msg, sizeof(msg)); //scrie exit la server
-      bzero(msg, BUF);
-      printf("Connection Terminated.\n");
-      break;
-    }
-
-    else if (strcmp(msg, "commands") == 0)
-    {
-      menu();
     }
 
     else if (strcmp(msg, "showGenres") == 0)
@@ -260,85 +308,31 @@ int main(int argc, char *argv[])
         read(sd, msg, sizeof(msg));
         printf("%s \n", msg);
         bzero(msg, BUF);
+        sleep(3);
+        menu(0);
       }
       else
         printf("You must be logged in to perform this action.\n");
     }
 
-    else if (strcmp(msg, "showSongs") == 0)
+    else if (strcmp(msg, "deleteGenre") == 0)
     {
-      if (loginFlag == 1)
+      if (loginFlag == 1 && adminFlag == 1)
       {
-        write(sd, msg, sizeof(msg)); // scrie showSongs la server
+        write(sd, msg, sizeof(msg)); // scrie deleteGenre la server
         bzero(msg, BUF);
-        read(sd, msg, sizeof(msg));
-        printf("\n%s\n", msg);
+        read(sd, msg, sizeof(msg)); // citeste lista de melodii de la server (1)
+        printf("%s \nEnter the ID of the genre you want to delete. \n", msg);
         bzero(msg, BUF);
-      }
-      else
-        printf("You must be logged in to perform this action.\n");
-    }
-
-    else if (strcmp(msg, "topByVotes") == 0)
-    {
-      if (loginFlag == 1)
-      {
-        write(sd, msg, sizeof(msg)); // scrie topByVotes la server
-        bzero(msg, BUF);
-        read(sd, msg, sizeof(msg));
-        printf("\n%s\n", msg);
-        bzero(msg, BUF);
-      }
-      else
-        printf("You must be logged in to perform this action.\n");
-    }
-
-    else if (strcmp(msg, "topByGenre") == 0)
-    {
-      if (loginFlag == 1)
-      {
-        write(sd, msg, sizeof(msg)); // scrie topByVotes la server
-        bzero(msg, BUF);
-        read(sd, msg, sizeof(msg)); // citeste de la client genres; (1)
-        printf("%s \n", msg);
-        bzero(msg, BUF);
-        printf("Enter the genre name:\n");
-        read(0, msg, sizeof(msg));
+        read(0, msg, sizeof(msg)); // citeste de la tastatura ID
         msg[strlen(msg) - 1] = 0;
-        write(sd, msg, sizeof(msg)); // scrie genre_name la server (2)
-        bzero(msg, BUF);
-        read(sd, msg, sizeof(msg)); // citeste de la server songs (3)
-        printf("\n %s \n", msg);
-        bzero(msg, BUF);
+        write(sd, msg, sizeof(msg)); // scrie ID la server (2)
+        printf("Genre deleted successfully.\n");
+        sleep(3);
+        menu(1);
       }
       else
-        printf("You must be logged in to perform this action.\n");
-    }
-
-    else if (strcmp(msg, "vote") == 0)
-    {
-      if (loginFlag == 1)
-      {
-        write(sd, msg, sizeof(msg)); // scrie vote la server
-        bzero(msg, BUF);
-        read(sd, msg, sizeof(msg)); // citeste validare drept de vot (1)
-        voteFlag = atoi(msg);
-        if (voteFlag == 1 || adminFlag == 1)
-        {
-          read(sd, msg, sizeof(msg)); // citeste lista de melodii de la server (2)
-          printf("%s \nEnter the ID of the song you want to vote. \n", msg);
-          bzero(msg, BUF);
-          read(0, msg, sizeof(msg)); // citeste de la tastatura ID
-          msg[strlen(msg) - 1] = 0;
-          write(sd, msg, sizeof(msg)); // scrie ID la server (3)
-          bzero(msg, BUF);
-          printf("Song was voted successfully.\n");
-        }
-        else
-          printf("You don't have permission to vote\n");
-      }
-      else
-        printf("You must be logged in to perform this action.\n");
+        printf("You must be logged in as admin to perform this action.\n");
     }
 
     else if (strcmp(msg, "addDescription") == 0)
@@ -361,6 +355,8 @@ int main(int argc, char *argv[])
         msg[strlen(msg) - 1] = 0;
         write(sd, msg, sizeof(msg)); // scrie descriere la server (3)
         printf("Song description added successfully.\n");
+        sleep(3);
+        menu(1);
       }
       else
         printf("You must be logged in as admin to perform this action.\n");
@@ -385,6 +381,100 @@ int main(int argc, char *argv[])
         else
           printf("Description:\n \n %s \n \n", msg);
         bzero(msg, BUF);
+        sleep(3);
+        menu(0);
+      }
+      else
+        printf("You must be logged in to perform this action.\n");
+    }
+
+    else if (strcmp(msg, "deleteDescription") == 0)
+    {
+      if (loginFlag == 1 && adminFlag == 1)
+      {
+        write(sd, msg, sizeof(msg)); // scrie deleteDescription la server
+        bzero(msg, BUF);
+        read(sd, msg, sizeof(msg)); // citeste lista de melodii de la server (1)
+        printf("%s \nEnter the ID of the song you want to delete the description for. \n", msg);
+        bzero(msg, BUF);
+        read(0, msg, sizeof(msg)); // citeste de la tastatura ID
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie ID la server (2)
+        printf("Song description deleted successfully.\n");
+        sleep(3);
+        menu(1);
+      }
+      else
+        printf("You must be logged in as admin to perform this action.\n");
+    }
+
+    else if (strcmp(msg, "writeComment") == 0)
+    {
+      if (loginFlag == 1)
+      {
+        write(sd, msg, sizeof(msg)); // scrie comment la server
+        bzero(msg, BUF);
+        read(sd, msg, sizeof(msg)); // citeste lista de melodii de la server (1)
+        printf("%s \n", msg);
+        bzero(msg, BUF);
+        printf("Select a Song ID to comment on:\n");
+        read(0, msg, sizeof(msg));
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie SongID la server (2)
+        bzero(msg, BUF);
+        printf("Your Comment:\n");
+        read(0, msg, sizeof(msg));
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie comment la server (3)
+        bzero(msg, BUF);
+        printf("\n Comment added successfully.\n");
+        sleep(3);
+        menu(1);
+      }
+      else
+        printf("You must be logged in to perform this action.\n");
+    }
+
+    else if (strcmp(msg, "showComments") == 0)
+    {
+      if (loginFlag == 1)
+      {
+        write(sd, msg, sizeof(msg)); // scrie comment la server
+        bzero(msg, BUF);
+        read(sd, msg, sizeof(msg)); // citeste lista de melodii de la server (1)
+        printf("%s \n", msg);
+        bzero(msg, BUF);
+        printf("Select a Song ID to see comments for:\n");
+        read(0, msg, sizeof(msg));
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie SongID la server (2)
+        bzero(msg, BUF);
+        read(sd, msg, sizeof(msg)); // citeste comentariile (3)
+        printf("\n %s \n", msg);
+        sleep(3);
+        menu(0);
+      }
+      else
+        printf("You must be logged in to perform this action.\n");
+    }
+
+    else if (strcmp(msg, "deleteComment") == 0)
+    {
+      if (loginFlag == 1 && adminFlag == 1)
+      {
+        write(sd, msg, sizeof(msg)); // scrie comment la server
+        bzero(msg, BUF);
+        read(sd, msg, sizeof(msg)); // citeste lista de melodii de la server (1)
+        printf("%s \n", msg);
+        bzero(msg, BUF);
+        printf("Select a Comment ID to delete:\n");
+        read(0, msg, sizeof(msg));
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie commentID la server (2)
+        bzero(msg, BUF);
+        printf("Comment deleted successfully.\n");
+        sleep(3);
+        menu(1);
       }
       else
         printf("You must be logged in to perform this action.\n");
@@ -414,45 +504,67 @@ int main(int argc, char *argv[])
           printf("URL Opened: %s \n", msg);
         }
         bzero(msg, BUF);
+        sleep(3);
+        menu(1);
       }
       else
         printf("You must be logged in to perform this action.\n");
     }
 
-    else if (strcmp(msg, "deleteSong") == 0)
+    else if (strcmp(msg, "topByGenre") == 0)
     {
-      if (loginFlag == 1 && adminFlag == 1)
+      if (loginFlag == 1)
       {
-        write(sd, msg, sizeof(msg)); // scrie deleteSong la server
+        write(sd, msg, sizeof(msg)); // scrie topByVotes la server
         bzero(msg, BUF);
-        read(sd, msg, sizeof(msg)); // citeste lista de melodii de la server (1)
-        printf("%s \nEnter the ID of the song you want to delete. \n", msg);
+        read(sd, msg, sizeof(msg)); // citeste de la client genres; (1)
+        printf("%s \n", msg);
         bzero(msg, BUF);
-        read(0, msg, sizeof(msg)); // citeste de la tastatura ID
+        printf("Enter the genre name:\n");
+        read(0, msg, sizeof(msg));
         msg[strlen(msg) - 1] = 0;
-        write(sd, msg, sizeof(msg)); // scrie ID la server (2)
-        printf("Song deleted successfully.\n");
+        write(sd, msg, sizeof(msg)); // scrie genre_name la server (2)
+        bzero(msg, BUF);
+        read(sd, msg, sizeof(msg)); // citeste de la server songs (3)
+        printf("\n %s \n", msg);
+        bzero(msg, BUF);
+        sleep(3);
+        menu(0);
       }
       else
-        printf("You must be logged in as admin to perform this action.\n");
+        printf("You must be logged in to perform this action.\n");
     }
 
-    else if (strcmp(msg, "deleteGenre") == 0)
+    else if (strcmp(msg, "topByVotes") == 0)
+    {
+      if (loginFlag == 1)
+      {
+        write(sd, msg, sizeof(msg)); // scrie topByVotes la server
+        bzero(msg, BUF);
+        read(sd, msg, sizeof(msg));
+        printf("\n%s\n", msg);
+        bzero(msg, BUF);
+        sleep(3);
+        menu(0);
+      }
+      else
+        printf("You must be logged in to perform this action.\n");
+    }
+
+    else if (strcmp(msg, "showUsers") == 0)
     {
       if (loginFlag == 1 && adminFlag == 1)
       {
-        write(sd, msg, sizeof(msg)); // scrie deleteGenre la server
+        write(sd, msg, sizeof(msg)); // scrie showGenres la server
         bzero(msg, BUF);
-        read(sd, msg, sizeof(msg)); // citeste lista de melodii de la server (1)
-        printf("%s \nEnter the ID of the genre you want to delete. \n", msg);
+        read(sd, msg, sizeof(msg)); // citeste lista users de la server
+        printf("%s \n", msg);
         bzero(msg, BUF);
-        read(0, msg, sizeof(msg)); // citeste de la tastatura ID
-        msg[strlen(msg) - 1] = 0;
-        write(sd, msg, sizeof(msg)); // scrie ID la server (2)
-        printf("Genre deleted successfully.\n");
+        sleep(3);
+        menu(0);
       }
       else
-        printf("You must be logged in as admin to perform this action.\n");
+        printf("You must be logged in to perform this action.\n");
     }
 
     else if (strcmp(msg, "setVoteRight") == 0)
@@ -477,45 +589,35 @@ int main(int argc, char *argv[])
           printf("User can vote.\n");
         else
           printf("User cannot vote.\n");
+        menu(1);
       }
       else
         printf("You must be logged in as admin to perform this action.\n");
     }
 
-    else if (strcmp(msg, "showUsers") == 0)
+    else if (strcmp(msg, "vote") == 0)
     {
-      if (loginFlag == 1 && adminFlag == 1)
+      if (loginFlag == 1)
       {
-        write(sd, msg, sizeof(msg)); // scrie showGenres la server
+        write(sd, msg, sizeof(msg)); // scrie vote la server
         bzero(msg, BUF);
-        read(sd, msg, sizeof(msg)); // citeste lista users de la server
-        printf("%s \n", msg);
-        bzero(msg, BUF);
-      }
-      else
-        printf("You must be logged in to perform this action.\n");
-    }
-
-    else if (strcmp(msg, "writeComment") == 0)
-    {
-      if(loginFlag == 1)
-      {
-        write(sd, msg, sizeof(msg)); // scrie comment la server
-        bzero(msg, BUF);
-        read(sd, msg, sizeof(msg)); // citeste lista de melodii de la server (1)
-        printf("%s \n", msg);
-        bzero(msg, BUF);
-        printf("Select a Song ID to comment on:\n");
-        read(0, msg, sizeof(msg));
-        msg[strlen(msg) - 1] = 0;
-        write(sd, msg, sizeof(msg)); // scrie SongID la server (2)
-        bzero(msg, BUF);
-        printf("Your Comment:\n");
-        read(0, msg, sizeof(msg));
-        msg[strlen(msg) - 1] = 0;
-        write(sd, msg, sizeof(msg)); // scrie comment la server (3)
-        bzero(msg, BUF);
-        printf("\n Comment added successfully.\n");
+        read(sd, msg, sizeof(msg)); // citeste validare drept de vot (1)
+        voteFlag = atoi(msg);
+        if (voteFlag == 1 || adminFlag == 1)
+        {
+          read(sd, msg, sizeof(msg)); // citeste lista de melodii de la server (2)
+          printf("%s \nEnter the ID of the song you want to vote. \n", msg);
+          bzero(msg, BUF);
+          read(0, msg, sizeof(msg)); // citeste de la tastatura ID
+          msg[strlen(msg) - 1] = 0;
+          write(sd, msg, sizeof(msg)); // scrie ID la server (3)
+          bzero(msg, BUF);
+          printf("Song was voted successfully.\n");
+          sleep(3);
+          menu(1);
+        }
+        else
+          printf("You don't have permission to vote\n");
       }
       else
         printf("You must be logged in to perform this action.\n");

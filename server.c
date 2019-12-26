@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <sqlite3.h>
 
-#define PORT 2024
+#define PORT 2025
 #define BUF 10000
 
 extern int errno;
@@ -990,6 +990,116 @@ void writeComment(int songID, int userID, char *comment)
 	sqlite3_close(database);
 }
 
+void showComments(int songID, char *comments)
+{
+	int comment_count = 0;
+	char commentsDisplay[BUF];
+	bzero(commentsDisplay, BUF);
+	rc = sqlite3_open("topmusic.db", &database);
+	if (rc)
+		printf("Error opening database. \n");
+	else
+		printf("Database opened successfully. \n");
+	asprintf(&query, "SELECT * FROM comments;");
+	printf("The following SQL Query will run: '%s'\n", query);
+	if (sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL) != SQLITE_OK)
+	{
+		sqlite3_close(database);
+		printf("Can't retrieve data: %s\n", sqlite3_errmsg(database));
+	}
+	while (sqlite3_step(statement) == SQLITE_ROW)
+	{
+		strcat(commentsDisplay, "  ");
+		strcat(commentsDisplay, sqlite3_column_text(statement, 3));
+		strcat(commentsDisplay, "\n");
+		comment_count++;
+	}
+	printf("Number of comments: %d\n", comment_count);
+	sqlite3_finalize(statement);
+	free(query);
+	sqlite3_close(database);
+	//printf("Variabila genresDisplay are:\n %s\n", genresDisplay);
+	strcpy(comments, commentsDisplay);
+}
+
+void showAllComments(char *comments)
+{
+	int comment_count = 0;
+	char commentsDisplay[BUF], commentID[BUF], songID[BUF], userID[BUF], comment[BUF];
+	int spaces;
+	bzero(commentsDisplay, BUF);
+	rc = sqlite3_open("topmusic.db", &database);
+	if (rc)
+		printf("Error opening database. \n");
+	else
+		printf("Database opened successfully. \n");
+	asprintf(&query, "SELECT * FROM comments;");
+	printf("The following SQL Query will run: '%s'\n", query);
+	if (sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL) != SQLITE_OK)
+	{
+		sqlite3_close(database);
+		printf("Can't retrieve data: %s\n", sqlite3_errmsg(database));
+	}
+	strcat(commentsDisplay, "\n  Comment ID      Song ID      User ID     Comment\n-----------------------------------------------------\n");
+	while (sqlite3_step(statement) == SQLITE_ROW)
+	{
+		strcat(commentsDisplay, "     ");
+		strcpy(commentID, sqlite3_column_text(statement, 0));
+		spaces = (15 - strlen(commentID));
+		strcat(commentsDisplay, commentID);
+		for (int i = 1; i <= spaces; i++)
+			strcat(commentsDisplay, " ");
+		bzero(commentID, BUF);
+
+		strcpy(songID, sqlite3_column_text(statement, 1));
+		spaces = (12 - strlen(songID));
+		strcat(commentsDisplay, songID);
+		for (int i = 1; i <= spaces; i++)
+			strcat(commentsDisplay, " ");
+		bzero(songID, BUF);
+
+		strcpy(userID, sqlite3_column_text(statement, 2));
+		spaces = (10 - strlen(userID));
+		strcat(commentsDisplay, userID);
+		for (int i = 1; i <= spaces; i++)
+			strcat(commentsDisplay, " ");
+		bzero(userID, BUF);
+
+		strcat(commentsDisplay, sqlite3_column_text(statement, 3));
+		strcat(commentsDisplay, "\n");
+		comment_count++;
+	}
+	printf("Number of comments: %d\n", comment_count);
+	sqlite3_finalize(statement);
+	free(query);
+	sqlite3_close(database);
+	//printf("Variabila genresDisplay are:\n %s\n", genresDisplay);
+	strcpy(comments, commentsDisplay);
+}
+
+void deleteComment(int commentID)
+{
+	rc = sqlite3_open("topmusic.db", &database);
+	if (rc)
+		printf("Error opening database. \n");
+	else
+		printf("Database opened successfully. \n");
+	asprintf(&query, "DELETE FROM comments where comment_id = %d;", commentID);
+	printf("The following SQL Query will run: '%s'\n", query);
+	if (sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL) != SQLITE_OK)
+	{
+		sqlite3_close(database);
+		printf("Can't retrieve data: %s\n", sqlite3_errmsg(database));
+	}
+	if (sqlite3_step(statement) == SQLITE_ROW)
+	{
+		printf("Delete was successful.\n");
+	}
+	sqlite3_finalize(statement);
+	free(query);
+	sqlite3_close(database);
+}
+
 int main()
 {
 	struct sockaddr_in server;
@@ -1068,7 +1178,7 @@ int main()
 						voteFlag = getVoteRight(ID);
 					}
 				}
-				
+
 				char u[BUF];
 				showUsers(u);
 				printf("Users: %s \n", u);
@@ -1296,7 +1406,7 @@ int main()
 					char selectedGenre[BUF];
 					char genres[BUF];
 					showGenres(genres);
-					write(client, genres, BUF); // trimite la client genres (1)
+					write(client, genres, BUF);		  // trimite la client genres (1)
 					read(client, selectedGenre, BUF); // citeste de la client genul ales (2)
 					topByGenre(songs, selectedGenre);
 					write(client, songs, BUF); // trimite la client genres (3)
@@ -1357,6 +1467,23 @@ int main()
 					printf("Song with ID = %d has the description:\n %s \n.", songID, desc);
 				}
 
+				// --- FUNCTIE DELETE DESCRIPTION ---------
+
+				else if (strcmp(input, "deleteDescription") == 0)
+				{
+					int songID;
+					char ID_as_string[BUF];
+					char songs[BUF];
+					char description[BUF];
+					strcpy(description, "");
+					showSongs(songs);
+					write(client, songs, BUF);		 // trimite la client lista de cantece (1)
+					read(client, ID_as_string, BUF); // citeste de la client songID (2)
+					songID = atoi(ID_as_string);
+					addDescription(songID, description);
+					printf("Description was deleted to song with ID = %d.", description, songID);
+				}
+
 				// --- FUNCTIE DESCHIDERE LINK
 
 				else if (strcmp(input, "openLink") == 0)
@@ -1411,7 +1538,7 @@ int main()
 					char users[BUF];
 					showUsers(users);
 					printf("Users: %s\n \n", users);
-					write(client, users, BUF); // trimite la client users (1)
+					write(client, users, BUF);		 // trimite la client users (1)
 					read(client, ID_as_string, BUF); // citeste id user de la client (2)
 					userID = atoi(ID_as_string);
 					read(client, canVote_as_string, BUF); // citeste 1 sau 0 pt voterights (3)
@@ -1438,22 +1565,44 @@ int main()
 					int userID;
 					sprintf(commentWithUsername, "%s: ", username);
 					userID = getUserID(username);
-					if(userID == 0)
+					if (userID == 0)
 					{
 						userID = getAdminID(username);
 						sprintf(commentWithUsername, "[ADMIN]%s: ", username);
-
 					}
 					showSongs(songs);
-					printf("USERID = %d \n", userID);
-					write(client, songs, BUF); // trimite lista melodii (1)
+					write(client, songs, BUF);		 // trimite lista melodii (1)
 					read(client, ID_as_string, BUF); // citeste songID de la client (2)
 					songID = atoi(ID_as_string);
-					printf("SONGID = %d \n", songID);
 					read(client, comment, BUF); // citeste comment de la client (3)
-					printf("COMMENT = %s \n", comment);
 					strcat(commentWithUsername, comment);
 					writeComment(songID, userID, commentWithUsername);
+				}
+
+				// --- FUNCTIE SHOW COMMENTS
+
+				else if (strcmp(input, "showComments") == 0)
+				{
+					char comments[BUF], songs[BUF], ID_as_string[BUF];
+					int songID;
+					write(client, songs, BUF);		 // trimite lista melodii (1)
+					read(client, ID_as_string, BUF); // citeste songID de la client (2)
+					songID = atoi(ID_as_string);
+					showComments(songID, comments);
+					write(client, comments, BUF); // trimite comentariile la client (3)
+				}
+
+				// --- FUNCTIE DELETE COMMENT
+
+				else if (strcmp(input, "deleteComment") == 0)
+				{
+					char comments[BUF], ID_as_string[BUF];
+					int commentID;
+					showAllComments(comments);
+					write(client, comments, BUF);	// trimite lista melodii (1)
+					read(client, ID_as_string, BUF); // citeste commentID de la client (2)
+					commentID = atoi(ID_as_string);
+					deleteComment(commentID);
 				}
 
 				// --- CAZ EROARE -----------
