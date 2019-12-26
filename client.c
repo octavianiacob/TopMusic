@@ -66,7 +66,6 @@ int main(int argc, char *argv[])
     bzero(msg, BUF);
     read(0, msg, sizeof(msg)); // citire de comanda de la tastatura
     msg[strlen(msg) - 1] = 0;
-    //-------------------------------------------------------------
 
     if (strcmp(msg, "register") == 0)
     {

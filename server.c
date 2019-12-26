@@ -1118,7 +1118,7 @@ int main()
 
 	if (setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)))
 	{
-		perror("setsockopt");
+		perror("Error on setsockopt()");
 		exit(EXIT_FAILURE);
 	}
 
@@ -1202,19 +1202,7 @@ int main()
 
 				printf(" Input received: %s\n", input);
 
-				// --- FUNCTIE EXIT ------------
-
-				if (strcmp(input, "exit") == 0)
-				{
-					printf("Ending connection with client...\n");
-					//write(client, "Connection terminated.\n", BUF);
-					close(client);
-					exit(0);
-				}
-
-				// --- FUNCTIE REGISTER --------
-
-				else if (strcmp(input, "register") == 0)
+				if (strcmp(input, "register") == 0)
 				{
 					bzero(username, BUF);
 					bzero(password, BUF);
@@ -1241,8 +1229,6 @@ int main()
 						printf("USERNAME INVALID \n");
 					}
 				}
-
-				// --- FUNCTIE LOGIN -----------
 
 				else if (strcmp(input, "login") == 0)
 				{
@@ -1282,7 +1268,13 @@ int main()
 					}
 				}
 
-				// --- FUNCTIE ADD SONG -----
+				else if (strcmp(input, "exit") == 0)
+				{
+					printf("Ending connection with client...\n");
+					//write(client, "Connection terminated.\n", BUF);
+					close(client);
+					exit(0);
+				}
 
 				else if (strcmp(input, "addSong") == 0)
 				{
@@ -1356,7 +1348,26 @@ int main()
 					}
 				}
 
-				// --- FUNCTIE ADD GENRES -----
+				else if (strcmp(input, "showSongs") == 0)
+				{
+					char songs[BUF];
+					showSongs(songs);
+					printf("Songs:\n \n %s\n \n", songs);
+					write(client, songs, BUF); // trimite la client genres
+				}
+
+				else if (strcmp(input, "deleteSong") == 0)
+				{
+					int songID;
+					char ID_as_string[BUF];
+					char songs[BUF];
+					showSongs(songs);
+					write(client, songs, BUF);		 // trimite la client lista de cantece (1)
+					read(client, ID_as_string, BUF); // citeste de la client songID (2)
+					songID = atoi(ID_as_string);
+					deleteSong(songID);
+					printf("Deleted song with ID = %d.\n", songID);
+				}
 
 				else if (strcmp(input, "addGenre") == 0)
 				{
@@ -1371,8 +1382,6 @@ int main()
 					printf("Genre inserted successfully.\n");
 				}
 
-				// --- FUNCTIE SHOW GENRES
-
 				else if (strcmp(input, "showGenres") == 0)
 				{
 					char genres[BUF];
@@ -1381,62 +1390,18 @@ int main()
 					write(client, genres, BUF); // trimite la client genres
 				}
 
-				// --- FUNCTIE SHOW SONGS ----
-
-				else if (strcmp(input, "showSongs") == 0)
+				else if (strcmp(input, "deleteGenre") == 0)
 				{
-					char songs[BUF];
-					showSongs(songs);
-					printf("Songs:\n \n %s\n \n", songs);
-					write(client, songs, BUF); // trimite la client genres
-				}
-
-				// --- FUNCTIE TOP BY VOTES ----
-
-				else if (strcmp(input, "topByVotes") == 0)
-				{
-					char songs[BUF];
-					topByVotes(songs);
-					printf("Songs:\n \n %s\n \n", songs);
-					write(client, songs, BUF); // trimite la client genres
-				}
-
-				// --- FUNCTIE TOP BY Genre ----
-
-				else if (strcmp(input, "topByGenre") == 0)
-				{
-					char songs[BUF];
-					char selectedGenre[BUF];
+					int genreID;
+					char ID_as_string[BUF];
 					char genres[BUF];
 					showGenres(genres);
-					write(client, genres, BUF);		  // trimite la client genres (1)
-					read(client, selectedGenre, BUF); // citeste de la client genul ales (2)
-					topByGenre(songs, selectedGenre);
-					write(client, songs, BUF); // trimite la client genres (3)
+					write(client, genres, BUF);		 // trimite la client lista de genuri (1)
+					read(client, ID_as_string, BUF); // citeste de la client genreID (2)
+					genreID = atoi(ID_as_string);
+					deleteGenre(genreID);
+					printf("Deleted genre with ID = %d.\n", genreID);
 				}
-
-				// --- FUNCTIE VOTE ---------
-
-				else if (strcmp(input, "vote") == 0)
-				{
-					char canVote[BUF];
-					sprintf(canVote, "%d", getVoteRight(ID));
-					write(client, canVote, BUF); // scrie la client validare drept de vot (1)
-					if (voteFlag == 1 || adminFlag == 1)
-					{
-						int songID;
-						char ID_as_string[BUF];
-						char songs[BUF];
-						showSongs(songs);
-						write(client, songs, BUF);		 // trimite la client lista de cantece (2)
-						read(client, ID_as_string, BUF); // citeste de la client songID (3)
-						songID = atoi(ID_as_string);
-						voteSong(songID);
-						printf("Song with ID = %d was successfully voted.", songID);
-					}
-				}
-
-				// --- FUNCTIE ADD DESCRIPTION ---------
 
 				else if (strcmp(input, "addDescription") == 0)
 				{
@@ -1453,8 +1418,6 @@ int main()
 					printf("Description \"%s\" was added to song with ID = %d.", description, songID);
 				}
 
-				// --- FUNCTIE SHOW DESCRIPTION ---------
-
 				else if (strcmp(input, "showDescription") == 0)
 				{
 					int songID;
@@ -1469,8 +1432,6 @@ int main()
 					write(client, desc, BUF); // trimite la client descrierea (3)
 					printf("Song with ID = %d has the description:\n %s \n.", songID, desc);
 				}
-
-				// --- FUNCTIE DELETE DESCRIPTION ---------
 
 				else if (strcmp(input, "deleteDescription") == 0)
 				{
@@ -1487,8 +1448,6 @@ int main()
 					printf("Description was deleted to song with ID = %d.", description, songID);
 				}
 
-				// --- FUNCTIE DESCHIDERE LINK
-
 				else if (strcmp(input, "openLink") == 0)
 				{
 					char URL[BUF];
@@ -1502,64 +1461,6 @@ int main()
 					getSongURL(songID, URL);
 					write(client, URL, BUF); // trimite la client URL (3)
 				}
-
-				// --- FUNCTIE DELETE SONG ---------
-
-				else if (strcmp(input, "deleteSong") == 0)
-				{
-					int songID;
-					char ID_as_string[BUF];
-					char songs[BUF];
-					showSongs(songs);
-					write(client, songs, BUF);		 // trimite la client lista de cantece (1)
-					read(client, ID_as_string, BUF); // citeste de la client songID (2)
-					songID = atoi(ID_as_string);
-					deleteSong(songID);
-					printf("Deleted song with ID = %d.\n", songID);
-				}
-
-				// --- FUNCTIE DELETE GENRE ---------
-
-				else if (strcmp(input, "deleteGenre") == 0)
-				{
-					int genreID;
-					char ID_as_string[BUF];
-					char genres[BUF];
-					showGenres(genres);
-					write(client, genres, BUF);		 // trimite la client lista de genuri (1)
-					read(client, ID_as_string, BUF); // citeste de la client genreID (2)
-					genreID = atoi(ID_as_string);
-					deleteGenre(genreID);
-					printf("Deleted genre with ID = %d.\n", genreID);
-				}
-
-				else if (strcmp(input, "setVoteRight") == 0)
-				{
-					int userID, canVote;
-					char canVote_as_string[BUF];
-					char ID_as_string[BUF];
-					char users[BUF];
-					showUsers(users);
-					printf("Users: %s\n \n", users);
-					write(client, users, BUF);		 // trimite la client users (1)
-					read(client, ID_as_string, BUF); // citeste id user de la client (2)
-					userID = atoi(ID_as_string);
-					read(client, canVote_as_string, BUF); // citeste 1 sau 0 pt voterights (3)
-					canVote = atoi(canVote_as_string);
-					setVoteRight(userID, canVote);
-				}
-
-				// --- FUNCTIE SHOW USERS
-
-				else if (strcmp(input, "showUsers") == 0)
-				{
-					char users[BUF];
-					showUsers(users);
-					printf("Users: %s\n \n", users);
-					write(client, users, BUF); // trimite la client users
-				}
-
-				// --- FUNCTIE WRITE COMMENT
 
 				else if (strcmp(input, "writeComment") == 0)
 				{
@@ -1582,8 +1483,6 @@ int main()
 					writeComment(songID, userID, commentWithUsername);
 				}
 
-				// --- FUNCTIE SHOW COMMENTS
-
 				else if (strcmp(input, "showComments") == 0)
 				{
 					char comments[BUF], songs[BUF], ID_as_string[BUF];
@@ -1594,8 +1493,6 @@ int main()
 					showComments(songID, comments);
 					write(client, comments, BUF); // trimite comentariile la client (3)
 				}
-
-				// --- FUNCTIE DELETE COMMENT
 
 				else if (strcmp(input, "deleteComment") == 0)
 				{
@@ -1608,7 +1505,68 @@ int main()
 					deleteComment(commentID);
 				}
 
-				// --- CAZ EROARE -----------
+				else if (strcmp(input, "topByGenre") == 0)
+				{
+					char songs[BUF];
+					char selectedGenre[BUF];
+					char genres[BUF];
+					showGenres(genres);
+					write(client, genres, BUF);		  // trimite la client genres (1)
+					read(client, selectedGenre, BUF); // citeste de la client genul ales (2)
+					topByGenre(songs, selectedGenre);
+					write(client, songs, BUF); // trimite la client genres (3)
+				}
+
+				else if (strcmp(input, "topByVotes") == 0)
+				{
+					char songs[BUF];
+					topByVotes(songs);
+					printf("Songs:\n \n %s\n \n", songs);
+					write(client, songs, BUF); // trimite la client genres
+				}
+
+				else if (strcmp(input, "showUsers") == 0)
+				{
+					char users[BUF];
+					showUsers(users);
+					printf("Users: %s\n \n", users);
+					write(client, users, BUF); // trimite la client users
+				}
+
+				else if (strcmp(input, "setVoteRight") == 0)
+				{
+					int userID, canVote;
+					char canVote_as_string[BUF];
+					char ID_as_string[BUF];
+					char users[BUF];
+					showUsers(users);
+					printf("Users: %s\n \n", users);
+					write(client, users, BUF);		 // trimite la client users (1)
+					read(client, ID_as_string, BUF); // citeste id user de la client (2)
+					userID = atoi(ID_as_string);
+					read(client, canVote_as_string, BUF); // citeste 1 sau 0 pt voterights (3)
+					canVote = atoi(canVote_as_string);
+					setVoteRight(userID, canVote);
+				}
+
+				else if (strcmp(input, "vote") == 0)
+				{
+					char canVote[BUF];
+					sprintf(canVote, "%d", getVoteRight(ID));
+					write(client, canVote, BUF); // scrie la client validare drept de vot (1)
+					if (voteFlag == 1 || adminFlag == 1)
+					{
+						int songID;
+						char ID_as_string[BUF];
+						char songs[BUF];
+						showSongs(songs);
+						write(client, songs, BUF);		 // trimite la client lista de cantece (2)
+						read(client, ID_as_string, BUF); // citeste de la client songID (3)
+						songID = atoi(ID_as_string);
+						voteSong(songID);
+						printf("Song with ID = %d was successfully voted.", songID);
+					}
+				}
 
 				else
 				{
@@ -1617,7 +1575,7 @@ int main()
 					strcpy(output, "Error! Unknown command.\n");
 					bzero(input, BUF);
 				}
-			} //while
-		}	 // else if
-	}		  //while
-} //main
+			}
+		}
+	}
+}
