@@ -22,7 +22,7 @@ char *err_msg = 0;
 char str[BUF];
 int rc;
 
-void insertUser(char username[])
+void addUser(char username[])
 {
 	rc = sqlite3_open("topmusic.db", &database);
 	if (rc)
@@ -30,7 +30,7 @@ void insertUser(char username[])
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "insert into user (user_name) values (\"%s\");", username);
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
 	rc = sqlite3_step(statement);
 	if (rc != SQLITE_DONE)
@@ -42,7 +42,7 @@ void insertUser(char username[])
 	sqlite3_close(database);
 }
 
-void insertPassword(char username[], char password[])
+void addPassword(char username[], char password[])
 {
 	rc = sqlite3_open("topmusic.db", &database);
 	if (rc)
@@ -50,7 +50,7 @@ void insertPassword(char username[], char password[])
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "update user set user_password = \"%s\" where user_name = \"%s\";", password, username);
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
 	rc = sqlite3_step(statement);
 	if (rc != SQLITE_DONE)
@@ -73,7 +73,7 @@ int isValidUser(char username[])
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "SELECT * FROM user WHERE user_name = \"%s\";", username);
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	rc = sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
 	rc = sqlite3_step(statement);
 	if (rc == SQLITE_ROW)
@@ -97,7 +97,7 @@ int isAdmin(char username[], char password[])
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "SELECT * FROM admin WHERE admin_name = \"%s\" AND  admin_password = \"%s\";", username, password);
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	rc = sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
 	rc = sqlite3_step(statement);
 	if (rc == SQLITE_ROW)
@@ -127,7 +127,7 @@ int isLoggedIn(char username[], char password[])
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "SELECT * FROM user WHERE user_name = \"%s\" AND  user_password = \"%s\";", username, password);
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	rc = sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
 	rc = sqlite3_step(statement);
 	if (rc == SQLITE_ROW)
@@ -146,7 +146,7 @@ int isLoggedIn(char username[], char password[])
 	}
 }
 
-void insertSong(char song_name[], char song_artist[], char song_link[], char genre1[], char genre2[], char genre3[])
+void addSong(char song_name[], char song_artist[], char song_link[], char genre1[], char genre2[], char genre3[])
 {
 	rc = sqlite3_open("topmusic.db", &database);
 	if (rc)
@@ -155,7 +155,7 @@ void insertSong(char song_name[], char song_artist[], char song_link[], char gen
 		printf("Database opened successfully.\n");
 	asprintf(&query, "insert into songs (song_name, song_artist, link, genre1, genre2, genre3, votes, song_description) values (\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", 0, \"\");", song_name, song_artist, song_link, genre1, genre2, genre3);
 	//asprintf(&query, "insert into songs (song_name, song_artist, link, genre1) values (\"%s\", \"%s\", \"%s\", \"%s\");", song_name, song_artist, song_link);
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
 	rc = sqlite3_step(statement);
 	if (rc != SQLITE_DONE)
@@ -167,7 +167,7 @@ void insertSong(char song_name[], char song_artist[], char song_link[], char gen
 	sqlite3_close(database);
 }
 
-void insertGenre(char genre_name[], char genre_description[])
+void addGenre(char genre_name[], char genre_description[])
 {
 	rc = sqlite3_open("topmusic.db", &database);
 	if (rc)
@@ -175,7 +175,7 @@ void insertGenre(char genre_name[], char genre_description[])
 	else
 		printf("Database opened successfully.\n");
 	asprintf(&query, "insert into genres (genre_name, genre_description) values (\"%s\", \"%s\");", genre_name, genre_description);
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
 	rc = sqlite3_step(statement);
 	if (rc != SQLITE_DONE)
@@ -198,7 +198,7 @@ void showGenres(char *genres)
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "SELECT * FROM genres;");
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	if (sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL) != SQLITE_OK)
 	{
 		sqlite3_close(database);
@@ -238,7 +238,7 @@ int isValidGenre(char genre[])
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "SELECT * FROM genres WHERE genre_name = \"%s\";", genre);
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	rc = sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
 	rc = sqlite3_step(statement);
 	if (rc == SQLITE_ROW)
@@ -269,7 +269,7 @@ void showSongs(char *songs)
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "SELECT * FROM songs;");
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	if (sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL) != SQLITE_OK)
 	{
 		sqlite3_close(database);
@@ -406,7 +406,7 @@ void topByVotes(char *songs)
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "SELECT * FROM songs order by votes desc;");
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	if (sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL) != SQLITE_OK)
 	{
 		sqlite3_close(database);
@@ -543,7 +543,7 @@ void topByGenre(char *songs, char *genre)
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "select * from songs where genre1 = \"%s\" or genre2 = \"%s\" or genre3 = \"%s\";", genre, genre, genre);
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	if (sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL) != SQLITE_OK)
 	{
 		sqlite3_close(database);
@@ -682,7 +682,7 @@ void voteSong(int songID)
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "SELECT * FROM songs WHERE id_song = \"%d\";", songID);
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	rc = sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
 	rc = sqlite3_step(statement);
 	if (rc == SQLITE_ROW)
@@ -701,7 +701,7 @@ void voteSong(int songID)
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "update songs set votes = \"%d\" where id_song = \"%d\";", votes + 1, songID);
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
 	rc = sqlite3_step(statement);
 	if (rc != SQLITE_DONE)
@@ -721,7 +721,7 @@ void addDescription(int songID, char *description)
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "update songs set song_description = \"%s\" where id_song = \"%d\";", description, songID);
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
 	rc = sqlite3_step(statement);
 	if (rc != SQLITE_DONE)
@@ -743,7 +743,7 @@ void showDescription(char *songs, int songID)
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "SELECT * FROM songs where id_song = %d;", songID);
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	if (sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL) != SQLITE_OK)
 	{
 		sqlite3_close(database);
@@ -771,7 +771,7 @@ void getSongURL(int songID, char *URL)
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "SELECT * FROM songs WHERE id_song = \"%d\";", songID);
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	rc = sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
 	rc = sqlite3_step(statement);
 	if (rc == SQLITE_ROW)
@@ -790,7 +790,7 @@ void deleteSong(int songID)
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "DELETE FROM songs where id_song = %d;", songID);
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	if (sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL) != SQLITE_OK)
 	{
 		sqlite3_close(database);
@@ -813,7 +813,7 @@ void deleteGenre(int genreID)
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "DELETE FROM genres where genre_id = %d;", genreID);
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	if (sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL) != SQLITE_OK)
 	{
 		sqlite3_close(database);
@@ -839,7 +839,7 @@ int getVoteRight(int userID)
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "select * from user where user_id = %d;", userID);
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	rc = sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
 	rc = sqlite3_step(statement);
 	if (rc == SQLITE_ROW)
@@ -862,7 +862,7 @@ void setVoteRight(int userID, int canVote)
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "update user set can_vote = \"%d\" where user_id = \"%d\";", canVote, userID);
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	rc = sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
 	rc = sqlite3_step(statement);
 	if (rc == SQLITE_ROW)
@@ -884,7 +884,7 @@ int getUserID(char username[])
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "select * from user where user_name = \"%s\";", username);
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	rc = sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
 	rc = sqlite3_step(statement);
 	if (rc == SQLITE_ROW)
@@ -906,7 +906,7 @@ int getAdminID(char username[])
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "select * from admin where admin_name = \"%s\";", username);
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	rc = sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
 	rc = sqlite3_step(statement);
 	if (rc == SQLITE_ROW)
@@ -929,7 +929,7 @@ void showUsers(char *users)
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "SELECT * FROM user;");
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	if (sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL) != SQLITE_OK)
 	{
 		sqlite3_close(database);
@@ -970,7 +970,7 @@ void showUsers(char *users)
 	strcpy(users, usersDisplay);
 }
 
-void writeComment(int songID, int userID, char *comment)
+void addComment(int songID, int userID, char *comment)
 {
 	rc = sqlite3_open("topmusic.db", &database);
 	if (rc)
@@ -978,7 +978,7 @@ void writeComment(int songID, int userID, char *comment)
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "insert into comments (song_id, user_id, comment) values (%d, %d, \"%s\");", songID, userID, comment);
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
 	rc = sqlite3_step(statement);
 	if (rc != SQLITE_DONE)
@@ -1001,7 +1001,7 @@ void showComments(int songID, char *comments)
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "SELECT * FROM comments;");
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	if (sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL) != SQLITE_OK)
 	{
 		sqlite3_close(database);
@@ -1034,7 +1034,7 @@ void showAllComments(char *comments)
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "SELECT * FROM comments;");
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	if (sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL) != SQLITE_OK)
 	{
 		sqlite3_close(database);
@@ -1085,7 +1085,7 @@ void deleteComment(int commentID)
 	else
 		printf("Database opened successfully. \n");
 	asprintf(&query, "DELETE FROM comments where comment_id = %d;", commentID);
-	printf("The following SQL Query will run: '%s'\n", query);
+	printf("SQL: '%s'\n", query);
 	if (sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL) != SQLITE_OK)
 	{
 		sqlite3_close(database);
@@ -1178,7 +1178,10 @@ int main()
 				if (loginFlag == 1)
 				{
 					if (adminFlag == 1)
+					{
 						ID = getAdminID(username);
+						voteFlag = 1;
+					}
 					else
 					{
 						ID = getUserID(username);
@@ -1188,9 +1191,8 @@ int main()
 
 				close(sd);
 				bzero(input, BUF);
-				printf("Welcome to TopMusic - Server\n");
-				printf("Awaiting input from client...\n");
-				printf("LOGIN FLAG = %d , ADMIN FLAG = %d , VOTE FLAG = %d, USER ID = %d\n", loginFlag, adminFlag, voteFlag, ID);
+				printf("\nLOGIN FLAG = %d , ADMIN FLAG = %d , VOTE FLAG = %d, USER ID = %d\n", loginFlag, adminFlag, voteFlag, ID);
+				printf("Awaiting input from client with ID = %d \n \n", ID);
 				fflush(stdout);
 
 				if (read(client, input, BUF) <= 0)
@@ -1200,7 +1202,7 @@ int main()
 					continue;
 				}
 
-				printf(" Input received: %s\n", input);
+				printf("Input received: %s\n", input);
 
 				if (strcmp(input, "register") == 0)
 				{
@@ -1216,10 +1218,10 @@ int main()
 						write(client, output, BUF); //scrie valid la client (2)
 						bzero(output, BUF);
 						printf("USERNAME VALID \n");
-						insertUser(username);
+						addUser(username);
 						read(client, password, BUF); //citeste parola de la client (3)
 						printf("Password is: %s \n", password);
-						insertPassword(username, password);
+						addPassword(username, password);
 					}
 					else
 					{
@@ -1320,7 +1322,7 @@ int main()
 								write(client, output, BUF); // scrie valid la client pt genre2 (10)
 								bzero(output, BUF);
 								printf("The genres are: %s , %s, %s \n", genre1, genre2, genre3);
-								insertSong(song_name, song_artist, song_link, genre1, genre2, genre3);
+								addSong(song_name, song_artist, song_link, genre1, genre2, genre3);
 								printf("Song inserted successfully.\n");
 							}
 							else // eroare la genre3
@@ -1352,7 +1354,6 @@ int main()
 				{
 					char songs[BUF];
 					showSongs(songs);
-					printf("Songs:\n \n %s\n \n", songs);
 					write(client, songs, BUF); // trimite la client genres
 				}
 
@@ -1378,15 +1379,13 @@ int main()
 					printf("Song artist is: %s \n", genre_description);
 					if (strcmp(genre_description, "") == 0)
 						strcat(genre_description, " ");
-					insertGenre(genre_name, genre_description);
-					printf("Genre inserted successfully.\n");
+					addGenre(genre_name, genre_description);
 				}
 
 				else if (strcmp(input, "showGenres") == 0)
 				{
 					char genres[BUF];
 					showGenres(genres);
-					printf("Genres: %s\n \n", genres);
 					write(client, genres, BUF); // trimite la client genres
 				}
 
@@ -1415,7 +1414,7 @@ int main()
 					read(client, description, BUF);  // citeste de la client descriere (3)
 					songID = atoi(ID_as_string);
 					addDescription(songID, description);
-					printf("Description \"%s\" was added to song with ID = %d.", description, songID);
+					printf("Description \"%s\" was added to song with ID = %d.\n", description, songID);
 				}
 
 				else if (strcmp(input, "showDescription") == 0)
@@ -1462,7 +1461,7 @@ int main()
 					write(client, URL, BUF); // trimite la client URL (3)
 				}
 
-				else if (strcmp(input, "writeComment") == 0)
+				else if (strcmp(input, "addComment") == 0)
 				{
 					char songs[BUF], ID_as_string[BUF], comment[BUF], commentWithUsername[BUF];
 					int songID;
@@ -1480,7 +1479,7 @@ int main()
 					songID = atoi(ID_as_string);
 					read(client, comment, BUF); // citeste comment de la client (3)
 					strcat(commentWithUsername, comment);
-					writeComment(songID, userID, commentWithUsername);
+					addComment(songID, userID, commentWithUsername);
 				}
 
 				else if (strcmp(input, "showComments") == 0)
