@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
   port = atoi(argv[2]);
   if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
   {
-    perror("Eroare la socket().\n");
+    perror("Error on socket().\n");
     return errno;
   }
   server.sin_family = AF_INET;
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 
   if (connect(sd, (struct sockaddr *)&server, sizeof(struct sockaddr)) == -1)
   {
-    perror("[client]Eroare la connect().\n");
+    perror("[client]Error pn connect().\n");
     return errno;
   }
 

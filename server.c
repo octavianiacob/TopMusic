@@ -1000,7 +1000,7 @@ void showComments(int songID, char *comments)
 		printf("Error opening database. \n");
 	else
 		printf("Database opened successfully. \n");
-	asprintf(&query, "SELECT * FROM comments;");
+	asprintf(&query, "SELECT * FROM comments where song_id = %d;", songID);
 	printf("SQL: '%s'\n", query);
 	if (sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL) != SQLITE_OK)
 	{
