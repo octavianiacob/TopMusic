@@ -23,11 +23,21 @@ void menu(int nl)
   }
   // Welcome Message
   if (loginFlag == 0)
-    printf(" Welcome to TopMusic!\n Please enter one of the following commands:\n \n 1) register\n 2) login\n 3) help\n 4) exit \n \n");
+    printf(" %c[1;31mWelcome to TopMusic!\n Please enter one of the following commands:\n \n 1) register\n 2) login\n 3) help\n 4) exit \n \n", 27);
   else if (loginFlag == 1 && adminFlag == 0)
-    printf(" Welcome to TopMusic!\n You are logged in as user.\n Please enter one of the following commands:\n \n 1) addSong              7) topByVotes \n 2) showSongs            8) topByGenre \n 3) showGenres           9) addComment \n 4) showDescription     10) showComments \n 5) vote                11) help \n 6) openLink            12) exit \n \n");
+    printf(" %c[1;33mWelcome to TopMusic!\n You are logged in as user.\n Please enter one of the following commands:\n \n 1) addSong              7) topByVotes \n 2) showSongs            8) topByGenre \n 3) showGenres           9) addComment \n 4) showDescription     10) showComments \n 5) vote                11) help \n 6) openLink            12) exit \n \n", 27);
   else if (loginFlag == 1 && adminFlag == 1)
-    printf(" Welcome to TopMusic!\n You are logged in as admin.\n Please enter one of the following commands:\n \n 1) addSong               11) addComment \n 2) showSongs             12) showComments \n 3) deleteSong            13) deleteComment \n 4) addGenre              14) topByGenre \n 5) showGenres            15) topByVotes \n 6) deleteGenre           16) showUsers \n 7) addDescription        17) setVoteRight \n 8) showDescription       18) vote \n 9) deleteDescription     19) help \n10) openLink              20) exit \n \n");
+    printf(" %c[1;32mWelcome to TopMusic!\n You are logged in as admin.\n Please enter one of the following commands:\n \n 1) addSong               11) addComment \n 2) showSongs             12) showComments \n 3) deleteSong            13) deleteComment \n 4) addGenre              14) topByGenre \n 5) showGenres            15) topByVotes \n 6) deleteGenre           16) showUsers \n 7) addDescription        17) setVoteRight \n 8) showDescription       18) makeAdmin  \n 9) deleteDescription     19) vote \n10) openLink              20) help \n                          21) exit \n \n", 27);
+  printf("\E(B\E[m");
+}
+
+void finish()
+{
+  printf("\E[5mPress ENTER to continue . . . \n"); //blink text
+  printf("\E(B\E[m");                              // clear text decoration
+  getchar();
+  system("clear");
+  menu(0);
 }
 
 int main(int argc, char *argv[])
@@ -62,7 +72,9 @@ int main(int argc, char *argv[])
   menu(0);
   while (1)
   {
-
+    printf("\E[5m> ");
+    printf("\E(B\E[m");
+    fflush(stdout);
     bzero(msg, BUF);
     read(0, msg, sizeof(msg)); // citire de comanda de la tastatura
     msg[strlen(msg) - 1] = 0;
@@ -88,13 +100,13 @@ int main(int argc, char *argv[])
           write(sd, msg, sizeof(msg)); // scrie la server parola (3)
           bzero(msg, BUF);
           printf("Registration successful.\n");
-          sleep(3);
-          menu(1);
+          finish();
         }
         else
         {
           bzero(msg, BUF);
           printf("This username is taken. Try again.\n");
+          finish();
         }
       }
       else
@@ -120,23 +132,29 @@ int main(int argc, char *argv[])
         read(sd, msg, sizeof(msg)); // citeste daca e admin sau user de la server (3)
         if (strcmp(msg, "admin") == 0)
         {
+          system("clear");
           printf("Login as admin successful.\n\n");
           adminFlag = 1;
           loginFlag = 1;
+
           menu(1);
         }
         else if (strcmp(msg, "user") == 0)
         {
+          system("clear");
           printf("Login as user successful.\n\n");
           adminFlag = 0;
           loginFlag = 1;
+
           menu(1);
         }
         else
         {
+          system("clear");
           printf("Login failed. Please try again.\n");
           adminFlag = 0;
           loginFlag = 0;
+
           menu(1);
         }
       }
@@ -144,12 +162,13 @@ int main(int argc, char *argv[])
         printf("You are already logged in. You must be signed out to perform this action.\n");
     }
 
-    else if (strcmp(msg, "help") == 0 || ((loginFlag == 0) && (strcmp(msg, "3") == 0)) || ((loginFlag == 1) && (adminFlag == 0) && (strcmp(msg, "11") == 0)) || ((loginFlag == 1) && (adminFlag == 1) && (strcmp(msg, "19") == 0)))
+    else if (strcmp(msg, "help") == 0 || ((loginFlag == 0) && (strcmp(msg, "3") == 0)) || ((loginFlag == 1) && (adminFlag == 0) && (strcmp(msg, "11") == 0)) || ((loginFlag == 1) && (adminFlag == 1) && (strcmp(msg, "20") == 0)))
     {
       menu(0);
+      finish();
     }
 
-    else if (strcmp(msg, "exit") == 0 || ((loginFlag == 0) && (strcmp(msg, "4") == 0)) || ((loginFlag == 1) && (adminFlag == 0) && (strcmp(msg, "12") == 0)) || ((loginFlag == 1) && (adminFlag == 1) && (strcmp(msg, "20") == 0)))
+    else if (strcmp(msg, "exit") == 0 || ((loginFlag == 0) && (strcmp(msg, "4") == 0)) || ((loginFlag == 1) && (adminFlag == 0) && (strcmp(msg, "12") == 0)) || ((loginFlag == 1) && (adminFlag == 1) && (strcmp(msg, "21") == 0)))
     {
       write(sd, "exit", sizeof(msg)); //scrie exit la server
       bzero(msg, BUF);
@@ -213,8 +232,7 @@ int main(int argc, char *argv[])
             if (strcmp(msg, "valid") == 0) // validare genre3
             {
               printf("Song added successfully.\n");
-              sleep(3);
-              menu(1);
+              finish();
             }
             else // eroare la genre3
             {
@@ -247,8 +265,7 @@ int main(int argc, char *argv[])
         read(sd, msg, sizeof(msg));
         printf("\n%s\n", msg);
         bzero(msg, BUF);
-        sleep(3);
-        menu(0);
+        finish();
       }
       else
         printf("You must be logged in to perform this action.\n");
@@ -267,8 +284,7 @@ int main(int argc, char *argv[])
         msg[strlen(msg) - 1] = 0;
         write(sd, msg, sizeof(msg)); // scrie ID la server (2)
         printf("Song deleted successfully.\n");
-        sleep(3);
-        menu(1);
+        finish();
       }
       else
         printf("You must be logged in as admin to perform this action.\n");
@@ -291,8 +307,7 @@ int main(int argc, char *argv[])
         write(sd, msg, sizeof(msg)); // scrie descriere la server (2)
         bzero(msg, BUF);
         printf("Genre added successfully.\n");
-        sleep(3);
-        menu(1);
+        finish();
       }
       else
         printf("You must be logged in as admin to perform this action.\n");
@@ -307,8 +322,7 @@ int main(int argc, char *argv[])
         read(sd, msg, sizeof(msg));
         printf("%s \n", msg);
         bzero(msg, BUF);
-        sleep(3);
-        menu(0);
+        finish();
       }
       else
         printf("You must be logged in to perform this action.\n");
@@ -327,8 +341,7 @@ int main(int argc, char *argv[])
         msg[strlen(msg) - 1] = 0;
         write(sd, msg, sizeof(msg)); // scrie ID la server (2)
         printf("Genre deleted successfully.\n");
-        sleep(3);
-        menu(1);
+        finish();
       }
       else
         printf("You must be logged in as admin to perform this action.\n");
@@ -354,8 +367,7 @@ int main(int argc, char *argv[])
         msg[strlen(msg) - 1] = 0;
         write(sd, msg, sizeof(msg)); // scrie descriere la server (3)
         printf("Song description added successfully.\n");
-        sleep(3);
-        menu(1);
+        finish();
       }
       else
         printf("You must be logged in as admin to perform this action.\n");
@@ -380,8 +392,7 @@ int main(int argc, char *argv[])
         else
           printf("Description:\n \n %s \n \n", msg);
         bzero(msg, BUF);
-        sleep(3);
-        menu(1);
+        finish();
       }
       else
         printf("You must be logged in to perform this action.\n");
@@ -400,8 +411,7 @@ int main(int argc, char *argv[])
         msg[strlen(msg) - 1] = 0;
         write(sd, msg, sizeof(msg)); // scrie ID la server (2)
         printf("Song description deleted successfully.\n");
-        sleep(3);
-        menu(1);
+        finish();
       }
       else
         printf("You must be logged in as admin to perform this action.\n");
@@ -427,8 +437,7 @@ int main(int argc, char *argv[])
         write(sd, msg, sizeof(msg)); // scrie comment la server (3)
         bzero(msg, BUF);
         printf("\n Comment added successfully.\n");
-        sleep(3);
-        menu(1);
+        finish();
       }
       else
         printf("You must be logged in to perform this action.\n");
@@ -450,8 +459,7 @@ int main(int argc, char *argv[])
         bzero(msg, BUF);
         read(sd, msg, sizeof(msg)); // citeste comentariile (3)
         printf("\n %s \n", msg);
-        sleep(3);
-        menu(0);
+        finish();
       }
       else
         printf("You must be logged in to perform this action.\n");
@@ -472,8 +480,7 @@ int main(int argc, char *argv[])
         write(sd, msg, sizeof(msg)); // scrie commentID la server (2)
         bzero(msg, BUF);
         printf("Comment deleted successfully.\n");
-        sleep(3);
-        menu(1);
+        finish();
       }
       else
         printf("You must be logged in to perform this action.\n");
@@ -503,8 +510,7 @@ int main(int argc, char *argv[])
           printf("URL Opened: %s \n", msg);
         }
         bzero(msg, BUF);
-        sleep(3);
-        menu(1);
+        finish();
       }
       else
         printf("You must be logged in to perform this action.\n");
@@ -527,8 +533,7 @@ int main(int argc, char *argv[])
         read(sd, msg, sizeof(msg)); // citeste de la server songs (3)
         printf("\n %s \n", msg);
         bzero(msg, BUF);
-        sleep(3);
-        menu(0);
+        finish();
       }
       else
         printf("You must be logged in to perform this action.\n");
@@ -543,8 +548,7 @@ int main(int argc, char *argv[])
         read(sd, msg, sizeof(msg));
         printf("\n%s\n", msg);
         bzero(msg, BUF);
-        sleep(3);
-        menu(0);
+        finish();
       }
       else
         printf("You must be logged in to perform this action.\n");
@@ -559,8 +563,7 @@ int main(int argc, char *argv[])
         read(sd, msg, sizeof(msg)); // citeste lista users de la server
         printf("%s \n", msg);
         bzero(msg, BUF);
-        sleep(3);
-        menu(0);
+        finish();
       }
       else
         printf("You must be logged in to perform this action.\n");
@@ -594,7 +597,7 @@ int main(int argc, char *argv[])
         printf("You must be logged in as admin to perform this action.\n");
     }
 
-    else if (strcmp(msg, "vote") == 0 || ((loginFlag == 1) && (adminFlag == 0) && (strcmp(msg, "5") == 0)) || ((loginFlag == 1) && (adminFlag == 1) && (strcmp(msg, "18") == 0)))
+    else if (strcmp(msg, "vote") == 0 || ((loginFlag == 1) && (adminFlag == 0) && (strcmp(msg, "5") == 0)) || ((loginFlag == 1) && (adminFlag == 1) && (strcmp(msg, "19") == 0)))
     {
       if (loginFlag == 1)
       {
@@ -612,8 +615,7 @@ int main(int argc, char *argv[])
           write(sd, msg, sizeof(msg)); // scrie ID la server (3)
           bzero(msg, BUF);
           printf("Song was voted successfully.\n");
-          sleep(3);
-          menu(1);
+          finish();
         }
         else
           printf("You don't have permission to vote\n");
@@ -622,6 +624,25 @@ int main(int argc, char *argv[])
         printf("You must be logged in to perform this action.\n");
     }
 
+    else if (strcmp(msg, "makeAdmin") == 0 || ((loginFlag == 1) && (adminFlag == 1) && (strcmp(msg, "18") == 0)))
+    {
+      if (loginFlag == 1 && adminFlag == 1)
+      {
+        write(sd, "makeAdmin", sizeof(msg)); // scrie makeAdmin la server
+        bzero(msg, BUF);
+        read(sd, msg, sizeof(msg)); // citeste lista useri de la server (1)
+        printf("%s \nEnter the ID of the user you want to promote to admin: \n", msg);
+        bzero(msg, BUF);
+        read(0, msg, sizeof(msg)); // citeste de la tastatura ID
+        msg[strlen(msg) - 1] = 0;
+        write(sd, msg, sizeof(msg)); // scrie ID la server (2)
+        bzero(msg, BUF);
+        printf("User was promoted successfully.\n");
+        finish();
+      }
+      else
+        printf("You must be logged in as admin to perform this action.\n");
+    }
     else
       printf("Unknown command. Type \"help\" to list all the available commands.\n");
   }

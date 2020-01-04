@@ -154,7 +154,6 @@ void addSong(char song_name[], char song_artist[], char song_link[], char genre1
 	else
 		printf("Database opened successfully.\n");
 	asprintf(&query, "insert into songs (song_name, song_artist, link, genre1, genre2, genre3, votes, song_description) values (\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", 0, \"\");", song_name, song_artist, song_link, genre1, genre2, genre3);
-	//asprintf(&query, "insert into songs (song_name, song_artist, link, genre1) values (\"%s\", \"%s\", \"%s\", \"%s\");", song_name, song_artist, song_link);
 	printf("SQL: '%s'\n", query);
 	sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
 	rc = sqlite3_step(statement);
@@ -1100,12 +1099,80 @@ void deleteComment(int commentID)
 	sqlite3_close(database);
 }
 
+void deleteUser(int userID)
+{
+	rc = sqlite3_open("topmusic.db", &database);
+	if (rc)
+		printf("Error opening database. \n");
+	else
+		printf("Database opened successfully. \n");
+	asprintf(&query, "DELETE FROM user where user_id = %d;", userID);
+	printf("SQL: '%s'\n", query);
+	if (sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL) != SQLITE_OK)
+	{
+		sqlite3_close(database);
+		printf("Can't retrieve data: %s\n", sqlite3_errmsg(database));
+	}
+	if (sqlite3_step(statement) == SQLITE_ROW)
+	{
+		printf("Delete was successful.\n");
+	}
+	sqlite3_finalize(statement);
+	free(query);
+	sqlite3_close(database);
+}
+
+void makeAdmin(int userID)
+{
+	char username[BUF], password[BUF];
+	bzero(username, BUF);
+	bzero(password, BUF);
+	rc = sqlite3_open("topmusic.db", &database);
+	if (rc)
+		printf("Error opening database. \n");
+	else
+		printf("Database opened successfully. \n");
+	asprintf(&query, "select * from user where user_id = %d;", userID);
+	printf("SQL: '%s'\n", query);
+	rc = sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
+	rc = sqlite3_step(statement);
+	if (rc == SQLITE_ROW)
+	{
+		sprintf(username, sqlite3_column_text(statement, 1));
+		sprintf(password, sqlite3_column_text(statement, 2));
+	}
+	sqlite3_finalize(statement);
+	free(query);
+	sqlite3_close(database);
+	printf("ID = %d Username = %s Password = %s \n", userID, username, password);
+	deleteUser(userID);
+	if (strcmp(username, "") != 0)
+	{
+		rc = sqlite3_open("topmusic.db", &database);
+		if (rc)
+			printf("Error opening database. \n");
+		else
+			printf("Database opened successfully. \n");
+		asprintf(&query, "insert into admin (admin_name, admin_password) values (\"%s\", \"%s\");", username, password);
+		printf("SQL: '%s'\n", query);
+		sqlite3_prepare_v2(database, query, strlen(query), &statement, NULL);
+		rc = sqlite3_step(statement);
+		if (rc != SQLITE_DONE)
+			printf("ERROR inserting data: %s\n", sqlite3_errmsg(database));
+		else
+			printf("Username inserted successfully.\n");
+		sqlite3_finalize(statement);
+		free(query);
+		sqlite3_close(database);
+	}
+}
+
 int main()
 {
 	struct sockaddr_in server;
 	struct sockaddr_in from;
-	char input[BUF];		//mesajul primit de la client
-	char output[BUF] = " "; //mesaj de raspuns pentru client
+	char input[BUF];		//comanda primita de la client
+	char output[BUF] = " "; //variabila de raspuns
 	int sd;
 	int opt = 1;
 	char user_input[BUF]; // copie a mesajului primit de la client
@@ -1486,6 +1553,7 @@ int main()
 				{
 					char comments[BUF], songs[BUF], ID_as_string[BUF];
 					int songID;
+					showSongs(songs);
 					write(client, songs, BUF);		 // trimite lista melodii (1)
 					read(client, ID_as_string, BUF); // citeste songID de la client (2)
 					songID = atoi(ID_as_string);
@@ -1565,6 +1633,17 @@ int main()
 						voteSong(songID);
 						printf("Song with ID = %d was successfully voted.", songID);
 					}
+				}
+
+				else if (strcmp(input, "makeAdmin") == 0)
+				{
+					char users[BUF], ID_as_string[BUF];
+					int userID;
+					showUsers(users);
+					write(client, users, BUF);		 // trimite la client users (1)
+					read(client, ID_as_string, BUF); // citeste id user de la client (2)
+					userID = atoi(ID_as_string);
+					makeAdmin(userID);
 				}
 
 				else
