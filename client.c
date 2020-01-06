@@ -21,14 +21,13 @@ void menu(int nl)
   {
     printf("\n \n \n");
   }
-  // Welcome Message
   if (loginFlag == 0)
-    printf(" %c[1;31mWelcome to TopMusic!\n Please enter one of the following commands:\n \n 1) register\n 2) login\n 3) help\n 4) exit \n \n", 27);
+    printf(" %c[1;31mWelcome to TopMusic!\n Please enter one of the following commands:\n \n 1) register\n 2) login\n 3) help\n 4) exit \n \n", 27); //red text - not logged in
   else if (loginFlag == 1 && adminFlag == 0)
-    printf(" %c[1;33mWelcome to TopMusic!\n You are logged in as user.\n Please enter one of the following commands:\n \n 1) addSong              7) topByVotes \n 2) showSongs            8) topByGenre \n 3) showGenres           9) addComment \n 4) showDescription     10) showComments \n 5) vote                11) help \n 6) openLink            12) exit \n \n", 27);
+    printf(" %c[1;33mWelcome to TopMusic!\n You are logged in as user.\n Please enter one of the following commands:\n \n 1) addSong              7) topByVotes \n 2) showSongs            8) topByGenre \n 3) showGenres           9) addComment \n 4) showDescription     10) showComments \n 5) vote                11) help \n 6) openLink            12) exit \n \n", 27); // yellow text - logged in as user
   else if (loginFlag == 1 && adminFlag == 1)
-    printf(" %c[1;32mWelcome to TopMusic!\n You are logged in as admin.\n Please enter one of the following commands:\n \n 1) addSong               11) addComment \n 2) showSongs             12) showComments \n 3) deleteSong            13) deleteComment \n 4) addGenre              14) topByGenre \n 5) showGenres            15) topByVotes \n 6) deleteGenre           16) showUsers \n 7) addDescription        17) setVoteRight \n 8) showDescription       18) makeAdmin  \n 9) deleteDescription     19) vote \n10) openLink              20) help \n                          21) exit \n \n", 27);
-  printf("\E(B\E[m");
+    printf(" %c[1;32mWelcome to TopMusic!\n You are logged in as admin.\n Please enter one of the following commands:\n \n 1) addSong               11) addComment \n 2) showSongs             12) showComments \n 3) deleteSong            13) deleteComment \n 4) addGenre              14) topByGenre \n 5) showGenres            15) topByVotes \n 6) deleteGenre           16) showUsers \n 7) addDescription        17) setVoteRight \n 8) showDescription       18) makeAdmin  \n 9) deleteDescription     19) vote \n10) openLink              20) help \n                          21) exit \n \n", 27); // green text - logged in as admin
+  printf("\E(B\E[m");                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             // clear text decoration
 }
 
 void finish()
@@ -64,7 +63,7 @@ int main(int argc, char *argv[])
 
   if (connect(sd, (struct sockaddr *)&server, sizeof(struct sockaddr)) == -1)
   {
-    perror("[client]Error pn connect().\n");
+    perror("[client]Error on connect().\n");
     return errno;
   }
 
@@ -72,8 +71,8 @@ int main(int argc, char *argv[])
   menu(0);
   while (1)
   {
-    printf("\E[5m> ");
-    printf("\E(B\E[m");
+    printf("\E[5m> ");  // blink text
+    printf("\E(B\E[m"); // clear text decoration
     fflush(stdout);
     bzero(msg, BUF);
     read(0, msg, sizeof(msg)); // citire de comanda de la tastatura
@@ -165,6 +164,7 @@ int main(int argc, char *argv[])
     else if (strcmp(msg, "help") == 0 || ((loginFlag == 0) && (strcmp(msg, "3") == 0)) || ((loginFlag == 1) && (adminFlag == 0) && (strcmp(msg, "11") == 0)) || ((loginFlag == 1) && (adminFlag == 1) && (strcmp(msg, "20") == 0)))
     {
       menu(0);
+      printf("Type either the number of the command you wish to execute, or the corresponding keyword. \n RED - You are not logged in \n YELLOW - Logged in, user rights only \n GREEN - Logged in, full admin rights \n \n");
       finish();
     }
 
@@ -294,7 +294,7 @@ int main(int argc, char *argv[])
     {
       if (loginFlag == 1 && adminFlag == 1)
       {
-        write(sd, msg, sizeof(msg)); // scrie addGenre la server
+        write(sd, "addGenre", sizeof(msg)); // scrie addGenre la server
         bzero(msg, BUF);
         printf("Enter the genre name:\n");
         read(0, msg, sizeof(msg));
